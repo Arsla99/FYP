@@ -22,11 +22,17 @@ async function sendViaTwilio(
 ): Promise<Array<{ name: string; phone: string; status: string; sid?: string; error?: string }>> {
   const twilio = (await import('twilio')).default;
   const client = twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
-  const from = process.env.TWILIO_PHONE_NUMBER!;
+
+  // Support both Messaging Service SID and direct phone number
+  const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+  const from = process.env.TWILIO_PHONE_NUMBER;
+  const sender = messagingServiceSid
+    ? { messagingServiceSid }
+    : { from: from! };
 
   const results = await Promise.allSettled(
     contacts.map(contact =>
-      client.messages.create({ body: message, from, to: contact.phone })
+      client.messages.create({ body: message, to: contact.phone, ...sender })
     )
   );
 
@@ -85,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const twilioConfigured =
       process.env.TWILIO_ACCOUNT_SID &&
       process.env.TWILIO_AUTH_TOKEN &&
-      process.env.TWILIO_PHONE_NUMBER;
+      (process.env.TWILIO_MESSAGING_SERVICE_SID || process.env.TWILIO_PHONE_NUMBER);
 
     let sendResults: any[];
 
