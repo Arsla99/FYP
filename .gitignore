@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+/tmp/
+*.wav
+*.webm
+*.mp4
+*.ogg
+
+# Node
+node_modules/
+.next/
+.env.local
+.env.*.local
+npm-debug.log*
+
+# Misc
+.DS_Store
+*.pem
+tsconfig.tsbuildinfo

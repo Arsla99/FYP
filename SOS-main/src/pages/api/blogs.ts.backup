@@ -1,0 +1,5 @@
+// Backup placeholder: no default export to avoid Next.js route collision.
+export const backupInfo = {
+	moved: true,
+	note: 'Original /api/blogs.ts moved to /api/blogs/index.ts. This file is a harmless backup.'
+};
