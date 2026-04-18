@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Navbar from '../../../components/Navbar';
 import { motion } from 'framer-motion';
+import { ArrowLeft, RefreshCw, Send } from 'lucide-react';
 
 export default function CreateBlog() {
   const router = useRouter();
@@ -80,7 +81,7 @@ export default function CreateBlog() {
   };
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-hidden">
+    <div className="min-h-screen text-text-primary font-sans relative overflow-hidden bg-bg-base">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
@@ -94,19 +95,19 @@ export default function CreateBlog() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => router.back()}
-              className="mr-4 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all"
+              className="mr-4 w-10 h-10 flex items-center justify-center rounded-xl bg-bg-elevated border border-border-default hover:bg-white/10 hover:border-border-hover transition-all"
             >
-              <span className="material-icons">arrow_back</span>
+              <ArrowLeft className="w-5 h-5 text-text-primary" />
             </motion.button>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Create New Blog</h1>
-              <p className="text-white/40 text-sm mt-0.5">Publish safety and emergency content</p>
+              <h1 className="text-3xl font-bold text-gradient">Create New Blog</h1>
+              <p className="text-text-tertiary text-sm mt-0.5">Publish safety and emergency content</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
-              <label className="block text-sm font-semibold text-white/80 mb-2">
+            <div className="rounded-3xl border border-border-default bg-bg-surface backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
+              <label className="block text-sm font-semibold text-text-secondary mb-2">
                 Title *
               </label>
               <input
@@ -115,13 +116,13 @@ export default function CreateBlog() {
                 value={formData.title}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 hover:border-white/20 transition-all"
+                className="w-full input"
                 placeholder="Enter blog title..."
               />
             </div>
 
-            <div className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
-              <label className="block text-sm font-semibold text-white/80 mb-2">
+            <div className="rounded-3xl border border-border-default bg-bg-surface backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
+              <label className="block text-sm font-semibold text-text-secondary mb-2">
                 Content *
               </label>
               <textarea
@@ -130,14 +131,14 @@ export default function CreateBlog() {
                 onChange={handleInputChange}
                 required
                 rows={12}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 hover:border-white/20 transition-all resize-none"
+                className="w-full textarea resize-none"
                 placeholder="Write your blog content here..."
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
-                <label className="block text-sm font-semibold text-white/80 mb-2">
+              <div className="rounded-3xl border border-border-default bg-bg-surface backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
+                <label className="block text-sm font-semibold text-text-secondary mb-2">
                   Category *
                 </label>
                 <select
@@ -145,18 +146,18 @@ export default function CreateBlog() {
                   value={formData.category}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 hover:border-white/20 transition-all"
+                  className="w-full select"
                 >
-                  <option value="health" className="bg-gray-900">Health & Wellness</option>
-                  <option value="emergency" className="bg-gray-900">Emergency Tips</option>
-                  <option value="first-aid" className="bg-gray-900">First Aid</option>
-                  <option value="mental-health" className="bg-gray-900">Mental Health</option>
-                  <option value="general" className="bg-gray-900">General</option>
+                  <option value="health" className="bg-bg-surface">Health & Wellness</option>
+                  <option value="emergency" className="bg-bg-surface">Emergency Tips</option>
+                  <option value="first-aid" className="bg-bg-surface">First Aid</option>
+                  <option value="mental-health" className="bg-bg-surface">Mental Health</option>
+                  <option value="general" className="bg-bg-surface">General</option>
                 </select>
               </div>
 
-              <div className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
-                <label className="block text-sm font-semibold text-white/80 mb-2">
+              <div className="rounded-3xl border border-border-default bg-bg-surface backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
+                <label className="block text-sm font-semibold text-text-secondary mb-2">
                   Tags (comma-separated)
                 </label>
                 <input
@@ -164,14 +165,14 @@ export default function CreateBlog() {
                   name="tags"
                   value={formData.tags}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 hover:border-white/20 transition-all"
+                  className="w-full input"
                   placeholder="emergency, safety, health"
                 />
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
-              <label className="block text-sm font-semibold text-white/80 mb-2">
+            <div className="rounded-3xl border border-border-default bg-bg-surface backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
+              <label className="block text-sm font-semibold text-text-secondary mb-2">
                 Image URL (optional)
               </label>
               <input
@@ -179,12 +180,12 @@ export default function CreateBlog() {
                 name="imageUrl"
                 value={formData.imageUrl}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 hover:border-white/20 transition-all"
+                className="w-full input"
                 placeholder="https://example.com/image.jpg"
               />
             </div>
 
-            <div className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
+            <div className="rounded-3xl border border-border-default bg-bg-surface backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
               <label className="flex items-center cursor-pointer">
                 <div className="relative">
                   <input
@@ -194,9 +195,9 @@ export default function CreateBlog() {
                     onChange={handleInputChange}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-white/10 peer-checked:bg-purple-500 rounded-full transition-all peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-md" />
+                  <div className="w-11 h-6 bg-white/10 peer-checked:bg-accent-gold rounded-full transition-all peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-md" />
                 </div>
-                <span className="ml-3 text-white/80 font-medium">Publish immediately</span>
+                <span className="ml-3 text-text-secondary font-medium">Publish immediately</span>
               </label>
             </div>
 
@@ -206,7 +207,7 @@ export default function CreateBlog() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => router.back()}
-                className="px-6 py-3 bg-white/5 text-white border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all font-semibold"
+                className="btn-secondary"
               >
                 Cancel
               </motion.button>
@@ -215,16 +216,16 @@ export default function CreateBlog() {
                 disabled={loading}
                 whileHover={{ scale: loading ? 1 : 1.02 }}
                 whileTap={{ scale: loading ? 1 : 0.98 }}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center"
+                className="btn-primary flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
-                    <span className="material-icons animate-spin mr-2">refresh</span>
+                    <RefreshCw className="w-4 h-4 animate-spin mr-2" />
                     Creating...
                   </>
                 ) : (
                   <>
-                    <span className="material-icons mr-2">publish</span>
+                    <Send className="w-4 h-4 mr-2" />
                     Create Blog
                   </>
                 )}

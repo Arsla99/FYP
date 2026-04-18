@@ -2,9 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { signIn, getSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldAlert, Eye, EyeOff, AlertCircle, ArrowRight, Mail, Lock, User, KeyRound } from 'lucide-react';
-import PremiumButton from "../../components/ui/PremiumButton";
-import Input from "../../components/ui/Input";
+import { ShieldAlert, Eye, EyeOff, AlertCircle, ArrowRight, Mail, Lock, User, KeyRound, Activity, MapPin, Mic, Users, Zap } from 'lucide-react';
+
+const easeOutExpo = [0.22, 1, 0.36, 1];
+
+const featureItems = [
+  { icon: Activity, label: "AI Fear & Emotion Detection", desc: "Real-time vocal distress analysis" },
+  { icon: MapPin, label: "Live GPS Sharing", desc: "Instant location to emergency contacts" },
+  { icon: Mic, label: "Keyword Voice Trigger", desc: "Say 'help' — SOS fires automatically" },
+  { icon: Users, label: "Multi-Contact Alerts", desc: "Notify all your emergency contacts at once" },
+];
+
+const stats = [
+  { value: "< 3s", label: "Alert Speed" },
+  { value: "AI", label: "Detection" },
+  { value: "24/7", label: "Active" },
+];
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -90,100 +103,125 @@ export default function AuthPage() {
     signIn('google', { callbackUrl: '/sos' });
   };
 
+  const formTitle = isPasscodeMode
+    ? "Emergency Access"
+    : isLogin
+      ? "Welcome back"
+      : "Create account";
+
+  const formSubtitle = isPasscodeMode
+    ? "Enter your emergency passcode for quick access"
+    : isLogin
+      ? "Sign in to your SOS Emergency account"
+      : "Join SOS Emergency and stay protected";
+
   return (
-    <div className="min-h-screen flex bg-gray-950 overflow-hidden">
+    <div className="min-h-screen flex bg-bg-base overflow-hidden">
       {/* ── Left Branding Panel (hidden on mobile) ── */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-red-950/30 to-orange-950/20" />
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-orb-slow" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-red-500/10 rounded-full blur-3xl animate-orb-slow-reverse" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-600/5 rounded-full blur-3xl animate-orb-pulse" />
+        {/* Base gradient */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(160deg, var(--bg-base) 0%, var(--bg-elevated) 40%, var(--bg-surface) 100%)',
+          }}
+        />
+
+        {/* Dot pattern overlay */}
+        <div className="absolute inset-0 opacity-40 dot-pattern" />
+
+        {/* Ambient orbs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute top-[15%] left-[20%] w-[420px] h-[420px] rounded-full blur-[100px] animate-orb-float"
+            style={{ background: 'rgba(59, 130, 246, 0.07)' }}
+          />
+          <div
+            className="absolute bottom-[20%] right-[15%] w-[360px] h-[360px] rounded-full blur-[100px] animate-orb-float-reverse"
+            style={{ background: 'rgba(139, 92, 246, 0.06)' }}
+          />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] rounded-full blur-[120px] animate-orb-breathe"
+            style={{ background: 'rgba(59, 130, 246, 0.04)' }}
+          />
         </div>
 
+        {/* Top content */}
         <div className="relative z-10">
           {/* Logo */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-center gap-4 mb-16"
+            transition={{ duration: 0.7, ease: easeOutExpo }}
+            className="flex items-center gap-3.5 mb-20"
           >
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center shadow-2xl shadow-orange-500/30">
-              <ShieldAlert className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 rounded-2xl bg-bg-surface border border-border-default flex items-center justify-center shadow-lg">
+              <ShieldAlert className="w-6 h-6 text-accent-gold" />
             </div>
             <div>
-              <h1 className="text-white font-bold text-2xl leading-tight">SOS Emergency</h1>
-              <p className="text-orange-400/80 text-sm">Safety & Rapid Assistance</p>
+              <h1 className="text-text-primary font-bold text-xl tracking-tight">SOS Emergency</h1>
+              <p className="text-text-tertiary text-xs tracking-wide">Safety & Rapid Assistance</p>
             </div>
           </motion.div>
 
           {/* Headline */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-12"
+            transition={{ duration: 0.7, delay: 0.1, ease: easeOutExpo }}
+            className="mb-14"
           >
-            <h2 className="text-5xl font-extrabold text-white leading-tight mb-4">
-              Your safety,<br />
-              <span className="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
-                always on.
-              </span>
+            <h2 className="text-[3.25rem] font-bold text-text-primary leading-[1.1] tracking-tight mb-5">
+              Your safety,
+              <br />
+              <span className="text-gradient">always on.</span>
             </h2>
-            <p className="text-gray-400 text-lg max-w-sm">
+            <p className="text-text-secondary text-base max-w-md leading-relaxed">
               AI-powered emergency detection that watches over you — so help is always one signal away.
             </p>
           </motion.div>
 
           {/* Feature list */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-5"
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="space-y-4"
           >
-            {[
-              { icon: "graphic_eq", label: "AI Fear & Emotion Detection", desc: "Real-time vocal distress analysis" },
-              { icon: "location_on", label: "Live GPS Sharing", desc: "Instant location to emergency contacts" },
-              { icon: "record_voice_over", label: "Keyword Voice Trigger", desc: "Say 'help' — SOS fires automatically" },
-              { icon: "contacts", label: "Multi-Contact Alerts", desc: "Notify all your emergency contacts at once" },
-            ].map((f, i) => (
-              <motion.div 
-                key={f.label} 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                className="flex items-center gap-4 group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-white/10 group-hover:border-white/20 transition-all">
-                  <span className="material-icons text-orange-400 text-lg">{f.icon}</span>
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">{f.label}</p>
-                  <p className="text-gray-500 text-xs">{f.desc}</p>
-                </div>
-              </motion.div>
-            ))}
+            {featureItems.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <motion.div
+                  key={f.label}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.45, delay: 0.35 + i * 0.08, ease: easeOutExpo }}
+                  className="flex items-center gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-bg-surface border border-border-default flex items-center justify-center shrink-0 transition-all duration-300 group-hover:border-border-hover group-hover:bg-bg-hover">
+                    <Icon className="w-[18px] h-[18px] text-accent-gold" />
+                  </div>
+                  <div>
+                    <p className="text-text-primary font-semibold text-sm tracking-tight">{f.label}</p>
+                    <p className="text-text-tertiary text-xs">{f.desc}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
 
         {/* Bottom stats */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="relative z-10 flex gap-8"
+          transition={{ duration: 0.6, delay: 0.65, ease: easeOutExpo }}
+          className="relative z-10 flex gap-10"
         >
-          {[
-            { value: "< 3s", label: "Alert Speed" },
-            { value: "AI", label: "Detection" },
-            { value: "24/7", label: "Active" },
-          ].map((s) => (
+          {stats.map((s) => (
             <div key={s.label}>
-              <p className="text-2xl font-bold text-white">{s.value}</p>
-              <p className="text-gray-500 text-xs">{s.label}</p>
+              <p className="text-2xl font-bold text-text-primary tracking-tight">{s.value}</p>
+              <p className="text-text-tertiary text-xs mt-0.5">{s.label}</p>
             </div>
           ))}
         </motion.div>
@@ -191,182 +229,293 @@ export default function AuthPage() {
 
       {/* ── Right Form Panel ── */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative">
-        <div className="absolute inset-0 bg-gray-950 lg:bg-gray-900/60 backdrop-blur-xl" />
-        {/* Subtle orbs on mobile/right side */}
-        <div className="absolute top-1/4 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 left-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
+        {/* Background */}
+        <div className="absolute inset-0 bg-bg-base" />
+
+        {/* Subtle orbs on right side */}
+        <div className="absolute top-1/4 right-0 w-72 h-72 rounded-full blur-[100px] pointer-events-none"
+          style={{ background: 'rgba(59, 130, 246, 0.04)' }}
+        />
+        <div className="absolute bottom-1/4 left-0 w-72 h-72 rounded-full blur-[100px] pointer-events-none"
+          style={{ background: 'rgba(139, 92, 246, 0.03)' }}
+        />
 
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, ease: easeOutExpo }}
           className="relative z-10 w-full max-w-md"
         >
           {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
-              <ShieldAlert className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3 mb-10 lg:hidden">
+            <div className="w-10 h-10 rounded-xl bg-bg-surface border border-border-default flex items-center justify-center">
+              <ShieldAlert className="w-5 h-5 text-accent-gold" />
             </div>
-            <span className="text-white font-bold text-xl">SOS Emergency</span>
+            <span className="text-text-primary font-bold text-lg tracking-tight">SOS Emergency</span>
           </div>
 
           {/* Card */}
-          <div className="relative">
-            {/* Gradient border glow */}
-            <div className="absolute -inset-[1px] bg-gradient-to-br from-orange-500/20 via-red-500/10 to-transparent rounded-3xl blur-sm" />
-            
-            <div className="relative bg-gray-900/90 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-xl">
-              {/* Header */}
-              <div className="mb-8">
-                <h2 className="text-3xl font-bold text-white mb-2">
-                  {isPasscodeMode ? "Emergency Access" : isLogin ? "Welcome back" : "Create account"}
+          <div className="card-elevated p-8 lg:p-10">
+            {/* Header */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={formTitle}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3, ease: easeOutExpo }}
+                className="mb-8"
+              >
+                <h2 className="text-2xl font-bold text-text-primary tracking-tight mb-1.5">
+                  {formTitle}
                 </h2>
-                <p className="text-gray-400 text-sm">
-                  {isPasscodeMode
-                    ? "Enter your emergency passcode for quick access"
-                    : isLogin
-                      ? "Sign in to your SOS Emergency account"
-                      : "Join SOS Emergency and stay protected"}
+                <p className="text-text-secondary text-sm leading-relaxed">
+                  {formSubtitle}
                 </p>
-              </div>
+              </motion.div>
+            </AnimatePresence>
 
-              {/* Error message */}
-              <AnimatePresence>
-                {errorMsg && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="mb-6 flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3"
-                  >
-                    <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
-                    <p className="text-red-400 text-sm">{errorMsg}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Error message */}
+            <AnimatePresence>
+              {errorMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.25, ease: easeOutExpo }}
+                  className="mb-6 flex items-start gap-3 rounded-xl px-4 py-3 border bg-accent-coral/[0.06] border-accent-coral/[0.18]"
+                >
+                  <AlertCircle className="w-4 h-4 text-accent-coral mt-0.5 shrink-0" />
+                  <p className="text-accent-coral text-sm leading-snug">{errorMsg}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
+            <AnimatePresence mode="wait">
               {isPasscodeMode ? (
-                <form onSubmit={handlePasscodeLogin} className="space-y-5">
-                  <Input
-                    label="Emergency Passcode"
-                    type="password"
-                    required
-                    value={passcode}
-                    onChange={(e) => setPasscode(e.target.value)}
-                    placeholder="Enter emergency passcode"
-                    maxLength={10}
-                    leftIcon={<KeyRound className="w-[18px] h-[18px]" />}
-                  />
-                  <PremiumButton variant="danger" size="lg" isLoading={loading} className="w-full">
+                <motion.form
+                  key="passcode"
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -12 }}
+                  transition={{ duration: 0.3, ease: easeOutExpo }}
+                  onSubmit={handlePasscodeLogin}
+                  className="space-y-5"
+                >
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-2">
+                      Emergency Passcode
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-accent-gold transition-colors duration-200">
+                        <KeyRound className="w-[18px] h-[18px]" />
+                      </div>
+                      <input
+                        type="password"
+                        required
+                        value={passcode}
+                        onChange={(e) => setPasscode(e.target.value)}
+                        placeholder="Enter emergency passcode"
+                        maxLength={10}
+                        className="input py-3.5 rounded-xl pl-10"
+                      />
+                    </div>
+                  </div>
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: loading ? 1 : 1.02 }}
+                    whileTap={{ scale: loading ? 1 : 0.97 }}
+                    disabled={loading}
+                    className="btn-danger w-full py-3.5 rounded-xl text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading && (
+                      <span className="w-4 h-4 border-2 border-text-primary/25 border-t-text-primary rounded-full animate-spin" />
+                    )}
                     Emergency Access
-                  </PremiumButton>
-                  <button type="button" onClick={() => { setIsPasscodeMode(false); setErrorMsg(""); }}
-                    className="w-full text-sm text-gray-400 hover:text-white transition-colors py-2 flex items-center justify-center gap-1">
-                    ← Back to regular login
+                  </motion.button>
+                  <button
+                    type="button"
+                    onClick={() => { setIsPasscodeMode(false); setErrorMsg(""); }}
+                    className="w-full text-sm text-text-tertiary hover:text-text-primary transition-colors duration-200 py-2 flex items-center justify-center gap-1.5"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                    Back to regular login
                   </button>
-                </form>
+                </motion.form>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {!isLogin && (
-                    <Input
-                      label="Full Name"
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter your full name"
-                      leftIcon={<User className="w-[18px] h-[18px]" />}
-                    />
-                  )}
+                <motion.form
+                  key="auth"
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -12 }}
+                  transition={{ duration: 0.3, ease: easeOutExpo }}
+                  onSubmit={handleSubmit}
+                  className="space-y-5"
+                >
+                  <AnimatePresence>
+                    {!isLogin && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25, ease: easeOutExpo }}
+                      >
+                        <div className="w-full">
+                          <label className="block text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-2">
+                            Full Name
+                          </label>
+                          <div className="relative group">
+                            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-accent-gold transition-colors duration-200">
+                              <User className="w-[18px] h-[18px]" />
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              placeholder="Enter your full name"
+                              className="input py-3.5 rounded-xl pl-10"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                  <Input
-                    label="Email Address"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    leftIcon={<Mail className="w-[18px] h-[18px]" />}
-                  />
-
-                  <div className="relative">
-                    <Input
-                      label="Password"
-                      type={showPassword ? "text" : "password"}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      leftIcon={<Lock className="w-[18px] h-[18px]" />}
-                      rightIcon={
-                        <button type="button" onClick={() => setShowPassword(!showPassword)}
-                          className="text-gray-500 hover:text-gray-300 transition-colors">
-                          {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
-                        </button>
-                      }
-                    />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-2">
+                      Email Address
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-accent-gold transition-colors duration-200">
+                        <Mail className="w-[18px] h-[18px]" />
+                      </div>
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="input py-3.5 rounded-xl pl-10"
+                      />
+                    </div>
                   </div>
 
-                  <PremiumButton variant="primary" size="lg" isLoading={loading} className="w-full" glow>
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-2">
+                      Password
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-accent-gold transition-colors duration-200">
+                        <Lock className="w-[18px] h-[18px]" />
+                      </div>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        className="input py-3.5 rounded-xl pl-10 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors duration-200"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-[18px] h-[18px]" />
+                        ) : (
+                          <Eye className="w-[18px] h-[18px]" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: loading ? 1 : 1.02 }}
+                    whileTap={{ scale: loading ? 1 : 0.97 }}
+                    disabled={loading}
+                    className="btn-primary w-full py-3.5 rounded-xl text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading && (
+                      <span className="w-4 h-4 border-2 border-text-primary/25 border-t-text-primary rounded-full animate-spin" />
+                    )}
                     {isLogin ? "Sign In" : "Create Account"}
-                  </PremiumButton>
-                </form>
+                  </motion.button>
+                </motion.form>
               )}
+            </AnimatePresence>
 
-              {!isPasscodeMode && (
-                <>
-                  {/* Divider */}
-                  <div className="flex items-center gap-3 my-6">
-                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                    <span className="text-gray-500 text-xs uppercase tracking-wider">or</span>
-                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                  </div>
+            {!isPasscodeMode && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+              >
+                {/* Divider */}
+                <div className="flex items-center gap-3 my-6">
+                  <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, var(--border-default), transparent)' }} />
+                  <span className="text-text-muted text-[11px] uppercase tracking-[0.2em] font-medium">or</span>
+                  <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, var(--border-default), transparent)' }} />
+                </div>
 
-                  {/* Google */}
-                  <PremiumButton 
-                    variant="secondary" 
-                    size="lg" 
-                    disabled={loading} 
-                    className="w-full"
-                    leftIcon={
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                      </svg>
-                    }
-                    onClick={handleGoogleLogin}
-                  >
-                    Continue with Google
-                  </PremiumButton>
+                {/* Google */}
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: loading ? 1 : 1.02 }}
+                  whileTap={{ scale: loading ? 1 : 0.97 }}
+                  disabled={loading}
+                  onClick={handleGoogleLogin}
+                  className="btn-secondary w-full py-3.5 rounded-xl text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Continue with Google
+                </motion.button>
 
-                  {/* Emergency passcode */}
-                  <PremiumButton 
-                    variant="outline" 
-                    size="lg" 
-                    className="w-full mt-3 text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50"
-                    onClick={() => { setIsPasscodeMode(true); setErrorMsg(""); }}
-                    leftIcon={<ShieldAlert className="w-4 h-4" />}
-                  >
-                    Emergency Passcode Access
-                  </PremiumButton>
-                </>
-              )}
+                {/* Emergency passcode */}
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => { setIsPasscodeMode(true); setErrorMsg(""); }}
+                  className="btn-danger w-full mt-3 py-3.5 rounded-xl text-base"
+                >
+                  <Zap className="w-4 h-4" />
+                  Emergency Passcode Access
+                </motion.button>
+              </motion.div>
+            )}
 
-              {/* Toggle login/signup */}
-              {!isPasscodeMode && (
-                <p className="text-center text-gray-500 text-sm mt-6">
-                  {isLogin ? "Don't have an account? " : "Already have an account? "}
-                  <button onClick={() => { setIsLogin(!isLogin); setErrorMsg(""); }}
-                    className="text-orange-400 hover:text-orange-300 font-semibold transition-colors inline-flex items-center gap-1">
-                    {isLogin ? "Sign Up" : "Sign In"}
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </p>
-              )}
-            </div>
+            {/* Toggle login/signup */}
+            {!isPasscodeMode && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+                className="text-center text-text-tertiary text-sm mt-7"
+              >
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                <button
+                  onClick={() => { setIsLogin(!isLogin); setErrorMsg(""); }}
+                  className="text-accent-gold hover:text-accent-gold-light font-semibold transition-colors duration-200 inline-flex items-center gap-1"
+                >
+                  {isLogin ? "Sign Up" : "Sign In"}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </motion.p>
+            )}
           </div>
+
+          {/* Bottom legal text */}
+          <p className="text-center text-text-muted text-xs mt-6 px-4">
+            Protected by enterprise-grade encryption. Your data is never shared.
+          </p>
         </motion.div>
       </div>
     </div>

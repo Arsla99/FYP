@@ -4,11 +4,9 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../../components/Navbar';
-import { useTheme } from '../../utils/ThemeContext';
 import PageTransition, { StaggerContainer, StaggerItem, FadeIn } from '../../components/animations/PageTransition';
-import PremiumButton from '../../components/ui/PremiumButton';
-import Input from '../../components/ui/Input';
 import SectionTitle from '../../components/ui/SectionTitle';
+import { UserPlus, Trash2, PlusCircle, X, Siren, User, LogOut, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 
 interface Contact {
   _id?: string;
@@ -24,8 +22,6 @@ interface Keyword {
 
 export default function Settings() {
   const router = useRouter();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const [userRole, setUserRole] = useState<string>('user');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -253,20 +249,20 @@ export default function Settings() {
   // Show loading while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-bg-base">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-gray-900/60 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/20 p-12 flex flex-col items-center"
+          className="card p-12 flex flex-col items-center"
         >
           <div className="relative w-20 h-20 mb-6">
-            <div className="absolute inset-0 rounded-full border-4 border-white/10" />
-            <div className="absolute inset-0 rounded-full border-t-4 border-orange-500 animate-spin" />
+            <div className="absolute inset-0 rounded-full border-4 border-border-default" />
+            <div className="absolute inset-0 rounded-full border-t-4 border-accent-gold animate-spin" />
             <div className="absolute inset-2 rounded-full border-2 border-white/5" />
           </div>
-          <p className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Loading Settings...</p>
-          <p className="text-sm text-white/50 mt-2">Preparing your emergency preferences</p>
+          <p className="text-xl font-semibold text-text-primary">Loading Settings...</p>
+          <p className="text-sm text-text-tertiary mt-2">Preparing your emergency preferences</p>
         </motion.div>
       </div>
     );
@@ -278,7 +274,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-hidden">
+    <div className="min-h-screen text-text-primary font-sans relative overflow-hidden bg-bg-base">
       <Navbar />
 
       <PageTransition className="container mx-auto px-4 py-8">
@@ -287,7 +283,7 @@ export default function Settings() {
             <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-3">
               Emergency Settings
             </h1>
-            <p className={`text-lg max-w-xl mx-auto ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
+            <p className="text-lg max-w-xl mx-auto text-text-secondary">
               Configure your emergency contacts and voice-activated keywords
             </p>
           </FadeIn>
@@ -298,7 +294,7 @@ export default function Settings() {
               <motion.div
                 whileHover={{ y: -4 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-gray-900/60 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/20 hover:shadow-card-hover hover-lift h-full"
+                className="card hover:shadow-card-hover hover-lift h-full"
               >
                 <div className="p-6 md:p-8">
                   <SectionTitle
@@ -309,33 +305,34 @@ export default function Settings() {
 
                   {/* Add New Contact Form */}
                   <div className="mb-6 space-y-4">
-                    <Input
+                    <input
                       type="text"
                       placeholder="Contact Name"
                       value={newContact.name}
                       onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
+                      className="w-full input"
                     />
-                    <Input
+                    <input
                       type="tel"
                       placeholder="Phone Number (+1234567890)"
                       value={newContact.phone}
                       onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
+                      className="w-full input"
                     />
-                    <Input
+                    <input
                       type="text"
                       placeholder="Relationship (optional)"
                       value={newContact.relationship}
                       onChange={(e) => setNewContact({ ...newContact, relationship: e.target.value })}
+                      className="w-full input"
                     />
-                    <PremiumButton
+                    <button
                       onClick={saveContact}
-                      variant="primary"
-                      size="lg"
-                      className="w-full"
-                      leftIcon={<span className="material-icons text-lg">person_add</span>}
+                      className="btn-primary w-full flex items-center justify-center gap-2"
                     >
+                      <UserPlus className="w-5 h-5" />
                       Add Contact
-                    </PremiumButton>
+                    </button>
                   </div>
 
                   {/* Existing Contacts List */}
@@ -349,15 +346,13 @@ export default function Settings() {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, x: -20, scale: 0.95 }}
                           transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className={`rounded-2xl p-4 flex justify-between items-start transition-colors ${
-                            isDark ? 'bg-white/5 border border-white/[0.05] hover:bg-white/[0.07]' : 'bg-black/[0.03] border border-black/[0.05] hover:bg-black/[0.05]'
-                          }`}
+                          className="rounded-2xl p-4 flex justify-between items-start transition-colors bg-bg-elevated border border-border-default hover:bg-white/[0.03]"
                         >
                           <div>
-                            <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{contact.name}</div>
-                            <div className={`text-sm ${isDark ? 'text-white/70' : 'text-gray-600'}`}>{contact.phone}</div>
+                            <div className="font-semibold text-text-primary">{contact.name}</div>
+                            <div className="text-sm text-text-secondary">{contact.phone}</div>
                             {contact.relationship && (
-                              <div className={`text-xs ${isDark ? 'text-white/50' : 'text-gray-500'}`}>{contact.relationship}</div>
+                              <div className="text-xs text-text-tertiary">{contact.relationship}</div>
                             )}
                           </div>
                           {contact._id && (
@@ -365,9 +360,9 @@ export default function Settings() {
                               onClick={() => deleteContact(contact._id!)}
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
-                              className="text-red-400 hover:text-red-300 transition-colors p-1.5 rounded-lg hover:bg-white/5"
+                              className="text-accent-coral hover:text-accent-coral/80 transition-colors p-1.5 rounded-lg hover:bg-white/5"
                             >
-                              <span className="material-icons">delete</span>
+                              <Trash2 className="w-4 h-4" />
                             </motion.button>
                           )}
                         </motion.div>
@@ -378,7 +373,7 @@ export default function Settings() {
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className={`text-center py-8 ${isDark ? 'text-white/50' : 'text-gray-500'}`}
+                        className="text-center py-8 text-text-tertiary"
                       >
                         <p>No emergency contacts added yet.</p>
                         <p className="text-sm mt-2 opacity-70">Add contacts above to receive emergency alerts.</p>
@@ -394,7 +389,7 @@ export default function Settings() {
               <motion.div
                 whileHover={{ y: -4 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-gray-900/60 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/20 hover:shadow-card-hover hover-lift h-full"
+                className="card hover:shadow-card-hover hover-lift h-full"
               >
                 <div className="p-6 md:p-8">
                   <SectionTitle
@@ -405,7 +400,7 @@ export default function Settings() {
 
                   {/* Add New Keyword Form */}
                   <div className="mb-6 space-y-4">
-                    <Input
+                    <input
                       type="text"
                       placeholder="Emergency keyword (e.g., help, danger)"
                       value={newKeyword}
@@ -416,21 +411,20 @@ export default function Settings() {
                           saveKeyword();
                         }
                       }}
+                      className="w-full input"
                     />
-                    <PremiumButton
+                    <button
                       onClick={saveKeyword}
-                      variant="primary"
-                      size="lg"
-                      className="w-full"
-                      leftIcon={<span className="material-icons text-lg">add_circle</span>}
+                      className="btn-primary w-full flex items-center justify-center gap-2"
                     >
+                      <PlusCircle className="w-5 h-5" />
                       Add Keyword
-                    </PremiumButton>
+                    </button>
                   </div>
 
                   {/* Existing Keywords List */}
                   <div className="space-y-3">
-                    <p className={`text-sm mb-4 ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
+                    <p className="text-sm mb-4 text-text-secondary">
                       Keywords that will trigger emergency alerts when detected in audio:
                     </p>
 
@@ -444,7 +438,7 @@ export default function Settings() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
                             transition={{ duration: 0.25, delay: index * 0.03 }}
-                            className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1.5 rounded-full text-sm flex items-center shadow-lg shadow-orange-500/20"
+                            className="bg-gradient-to-r from-orange-500 to-red-500 text-text-primary px-3 py-1.5 rounded-full text-sm flex items-center shadow-lg shadow-orange-500/20"
                           >
                             {keyword.word}
                             {keyword._id && (
@@ -452,9 +446,9 @@ export default function Settings() {
                                 onClick={() => deleteKeyword(keyword._id!)}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                className="ml-2 text-white/80 hover:text-white transition-colors"
+                                className="ml-2 text-text-secondary hover:text-text-primary transition-colors"
                               >
-                                <span className="material-icons text-sm">close</span>
+                                <X className="w-3.5 h-3.5" />
                               </motion.button>
                             )}
                           </motion.div>
@@ -466,7 +460,7 @@ export default function Settings() {
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className={`text-center py-8 ${isDark ? 'text-white/50' : 'text-gray-500'}`}
+                        className="text-center py-8 text-text-tertiary"
                       >
                         <p>No emergency keywords added yet.</p>
                         <p className="text-sm mt-2 opacity-70">Add keywords above for voice-activated emergency detection.</p>
@@ -483,7 +477,7 @@ export default function Settings() {
             <motion.div
               whileHover={{ y: -4 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="bg-gray-900/60 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/20 hover:shadow-card-hover hover-lift"
+              className="card hover:shadow-card-hover hover-lift"
             >
               <div className="p-6 md:p-8">
                 <SectionTitle
@@ -497,10 +491,9 @@ export default function Settings() {
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                       <Link
                         href="/sos"
-                        className="block bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 p-4 rounded-2xl text-center shadow-lg shadow-red-500/20 transition-all"
-                        style={{ color: 'white' }}
+                        className="block bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 p-4 rounded-2xl text-center shadow-lg shadow-red-500/20 transition-all text-text-primary"
                       >
-                        <span className="material-icons text-2xl block mb-2">emergency</span>
+                        <Siren className="w-6 h-6 mx-auto mb-2" />
                         <span className="font-bold">Emergency SOS</span>
                       </Link>
                     </motion.div>
@@ -510,10 +503,9 @@ export default function Settings() {
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                       <Link
                         href="/profile"
-                        className="block bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 p-4 rounded-2xl text-center shadow-lg shadow-blue-500/20 transition-all"
-                        style={{ color: 'white' }}
+                        className="block bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 p-4 rounded-2xl text-center shadow-lg shadow-blue-500/20 transition-all text-text-primary"
                       >
-                        <span className="material-icons text-2xl block mb-2">person</span>
+                        <User className="w-6 h-6 mx-auto mb-2" />
                         <span className="font-bold">Profile</span>
                       </Link>
                     </motion.div>
@@ -527,10 +519,9 @@ export default function Settings() {
                       }}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      className="w-full bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 p-4 rounded-2xl text-center shadow-lg shadow-black/20 transition-all"
-                      style={{ color: 'white' }}
+                      className="w-full bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 p-4 rounded-2xl text-center shadow-lg shadow-black/20 transition-all text-text-primary"
                     >
-                      <span className="material-icons text-2xl block mb-2">logout</span>
+                      <LogOut className="w-6 h-6 mx-auto mb-2" />
                       <span className="font-bold">Logout</span>
                     </motion.button>
                   </StaggerItem>
@@ -552,19 +543,17 @@ export default function Settings() {
             className="fixed bottom-6 right-6 z-50"
           >
             <div
-              className={`px-6 py-4 rounded-2xl font-semibold shadow-2xl shadow-black/40 backdrop-blur-2xl border border-white/10 flex items-center gap-3 ${
+              className={`px-6 py-4 rounded-2xl font-semibold shadow-2xl shadow-black/40 backdrop-blur-2xl border border-border-default flex items-center gap-3 ${
                 toast.type === 'success'
-                  ? 'bg-green-500/90 text-white'
+                  ? 'bg-green-500/90 text-text-primary'
                   : toast.type === 'error'
-                  ? 'bg-red-500/90 text-white'
+                  ? 'bg-red-500/90 text-text-primary'
                   : toast.type === 'warning'
-                  ? 'bg-amber-500/90 text-white'
-                  : 'bg-blue-500/90 text-white'
+                  ? 'bg-amber-500/90 text-text-primary'
+                  : 'bg-blue-500/90 text-text-primary'
               }`}
             >
-              <span className="material-icons">
-                {toast.type === 'success' ? 'check_circle' : toast.type === 'error' ? 'error' : toast.type === 'warning' ? 'warning' : 'info'}
-              </span>
+              {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> : toast.type === 'error' ? <AlertCircle className="w-5 h-5" /> : toast.type === 'warning' ? <AlertTriangle className="w-5 h-5" /> : <Info className="w-5 h-5" />}
               <span>{toast.text}</span>
             </div>
           </motion.div>

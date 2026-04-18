@@ -7,6 +7,7 @@ interface GlassCardProps {
   gradientBorder?: boolean;
   hover?: boolean;
   glow?: boolean;
+  intensity?: 'low' | 'medium' | 'high';
 }
 
 export default function GlassCard({ 
@@ -14,8 +15,15 @@ export default function GlassCard({
   className,
   gradientBorder = false,
   hover = true,
-  glow = false
+  glow = false,
+  intensity = 'medium'
 }: GlassCardProps) {
+  const intensityStyles = {
+    low: 'bg-bg-surface/80 border-border-default/60',
+    medium: 'bg-bg-surface border-border-default',
+    high: 'bg-bg-elevated border-border-default',
+  };
+
   return (
     <div
       className={cn(
@@ -25,19 +33,22 @@ export default function GlassCard({
       )}
     >
       {gradientBorder && (
-        <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-br from-orange-500/40 via-red-500/20 to-orange-500/10 pointer-events-none">
-          <div className="w-full h-full rounded-2xl bg-gray-950/80" />
+        <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-br from-accent-gold/20 via-accent-purple/10 to-accent-gold/5 pointer-events-none">
+          <div className="w-full h-full rounded-2xl bg-bg-base" />
         </div>
       )}
       <div
         className={cn(
-          "relative h-full rounded-2xl border backdrop-blur-xl",
-          "bg-white/[0.03] dark:bg-white/[0.03] border-white/[0.06]",
-          "light:bg-white/80 light:border-black/[0.06]",
-          hover && "hover:bg-white/[0.05] hover:border-white/[0.12]",
-          hover && "light:hover:bg-white light:hover:border-black/[0.1]",
-          glow && "shadow-[0_0_40px_-10px_rgba(249,115,22,0.15)]"
+          "relative h-full rounded-2xl border backdrop-blur-2xl",
+          intensityStyles[intensity],
+          hover && "hover:bg-bg-elevated hover:border-border-default",
+          glow && "shadow-[0_0_50px_-15px_rgba(59,130,246,0.10)]"
         )}
+        style={{
+          boxShadow: glow 
+            ? '0 4px 24px rgba(0,0,0,0.15), 0 0 50px -15px rgba(59,130,246,0.10), inset 0 1px 0 rgba(255,255,255,0.04)'
+            : '0 4px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.03)'
+        }}
       >
         {children}
       </div>
@@ -47,19 +58,29 @@ export default function GlassCard({
 
 export function GlassPanel({ 
   children, 
-  className 
+  className,
+  intensity = 'medium'
 }: { 
   children: ReactNode; 
   className?: string;
+  intensity?: 'low' | 'medium' | 'high';
 }) {
+  const intensityStyles = {
+    low: 'bg-bg-surface/60 border-border-default/50',
+    medium: 'bg-bg-surface/80 border-border-default/70',
+    high: 'bg-bg-elevated border-border-default',
+  };
+
   return (
     <div
       className={cn(
-        "rounded-2xl border backdrop-blur-xl",
-        "bg-white/[0.02] border-white/[0.05]",
-        "light:bg-white/60 light:border-black/[0.05]",
+        "rounded-2xl border backdrop-blur-2xl",
+        intensityStyles[intensity],
         className
       )}
+      style={{
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)'
+      }}
     >
       {children}
     </div>

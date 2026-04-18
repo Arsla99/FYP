@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, X, Send, Sparkles, Phone } from 'lucide-react';
+import { Bot, X, Send, Sparkles, Phone, AlertTriangle, RotateCcw } from 'lucide-react';
 
 interface Message {
   id: number;
@@ -13,45 +13,45 @@ interface Message {
 
 // ─── Knowledge base ───────────────────────────────────────────────────────────
 const QUICK_TOPICS = [
-  { label: '🩺 Medical Emergency', key: 'medical' },
-  { label: '🔥 Fire Emergency',    key: 'fire'    },
-  { label: '🚗 Road Accident',     key: 'accident' },
-  { label: '🦺 Crime / Attack',    key: 'crime'   },
-  { label: '🌊 Natural Disaster',  key: 'disaster' },
-  { label: '📞 Emergency Numbers', key: 'numbers' },
+  { label: '🩺 Medical Emergency', icon: '🩺' },
+  { label: '🔥 Fire Emergency',    icon: '🔥' },
+  { label: '🚗 Road Accident',     icon: '🚗' },
+  { label: '🦺 Crime / Attack',    icon: '🦺' },
+  { label: '🌊 Natural Disaster',  icon: '🌊' },
+  { label: '📞 Emergency Numbers', icon: '📞' },
 ];
 
 const BOT_FLOWS: Record<string, { reply: string; options?: string[] }> = {
   start: {
-    reply: "Hello! I'm your Emergency Response Assistant — powered by AI.\n\nI can guide you through any crisis, explain how to use the SOS app, or answer first-aid questions. Choose a topic below or type your question.",
+    reply: "Hi! I'm your Emergency Response Assistant, powered by Gemini AI.\n\nSelect a topic below for instant guidance, or type your question and I'll answer with AI.",
     options: QUICK_TOPICS.map(t => t.label),
   },
   '🩺 Medical Emergency': {
-    reply: 'I can help. Which best describes the situation?',
+    reply: 'Which best describes the situation?',
     options: ['💓 Cardiac Arrest / No pulse', '🩸 Severe Bleeding', '🫁 Not Breathing', '🤕 Unconscious Person', '🐍 Poisoning / Overdose', '🦴 Broken Bone'],
   },
   '💓 Cardiac Arrest / No pulse': {
-    reply: `**CALL 115 NOW**\n\n1. Lay person flat on a firm surface.\n2. Place hands center of chest — give hard, fast compressions (100-120/min, 5-6 cm deep).\n3. After 30 compressions give 2 rescue breaths.\n4. Continue until ambulance arrives.\n\n⚠️ Do NOT stop unless told by emergency responder.`,
+    reply: `**CALL 115 NOW**\n\n1. Lay the person flat on a firm surface.\n2. Place both hands center of chest — push hard and fast (100-120/min, 5-6 cm deep).\n3. After 30 compressions give 2 rescue breaths.\n4. Continue until ambulance arrives.\n\n⚠️ Do NOT stop unless told by emergency services.`,
     options: ['↩ Back to Medical', '📞 Show emergency numbers'],
   },
   '🩸 Severe Bleeding': {
-    reply: `1. Apply firm direct pressure with a clean cloth.\n2. Do NOT remove cloth — add more on top if soaked.\n3. Raise the injured limb above heart level.\n4. Apply tourniquet only if bleeding is life-threatening.\n5. Call **115** immediately.`,
+    reply: `1. Apply firm direct pressure with a clean cloth.\n2. Do NOT remove cloth — add more on top if soaked.\n3. Raise the injured limb above heart level.\n4. Tourniquet only if bleeding is life-threatening.\n5. **Call 115 immediately.**`,
     options: ['↩ Back to Medical', '📞 Show emergency numbers'],
   },
   '🫁 Not Breathing': {
-    reply: `1. Check surroundings are safe.\n2. Tap shoulders — shout "Are you OK?".\n3. If no response: **call 115 immediately**.\n4. Tilt head back, lift chin to open airway.\n5. Give 2 rescue breaths then start CPR — 30 compressions : 2 breaths.\n6. Use AED if available.`,
+    reply: `1. Check surroundings are safe.\n2. Tap shoulders — shout "Are you OK?".\n3. No response: **call 115 immediately**.\n4. Tilt head back, lift chin to open airway.\n5. Give 2 rescue breaths then start CPR — 30 compressions : 2 breaths.\n6. Use AED if available.`,
     options: ['↩ Back to Medical', '📞 Show emergency numbers'],
   },
   '🤕 Unconscious Person': {
-    reply: `1. Check breathing — look, listen, feel.\n2. If breathing: place in **recovery position** (on side) to prevent choking.\n3. If not breathing: start CPR immediately.\n4. Call **115** — stay with them.\n5. Do NOT give food or water.`,
+    reply: `1. Check breathing — look, listen, feel.\n2. Breathing: place in **recovery position** (on their side).\n3. Not breathing: start CPR immediately.\n4. **Call 115** — stay with them.\n5. Do NOT give food or water.`,
     options: ['↩ Back to Medical', '📞 Show emergency numbers'],
   },
   '🐍 Poisoning / Overdose': {
-    reply: `1. **Call 115 immediately** — tell them WHAT was taken.\n2. Do NOT induce vomiting unless instructed.\n3. If unconscious and breathing — recovery position.\n4. If not breathing — start CPR.\n5. Keep containers/packaging to show medical staff.`,
+    reply: `1. **Call 115 immediately** — tell them WHAT was taken.\n2. Do NOT induce vomiting unless instructed.\n3. Unconscious and breathing: recovery position.\n4. Not breathing: start CPR.\n5. Keep containers to show medical staff.`,
     options: ['↩ Back to Medical', '📞 Show emergency numbers'],
   },
   '🦴 Broken Bone': {
-    reply: `1. Do NOT try to realign the bone.\n2. Immobilize with a splint and bandage.\n3. Apply ice (wrapped in cloth) — 20 min on, 20 min off.\n4. Elevate if possible.\n5. **Call 115** for spine/neck/pelvis fractures — do not move patient.`,
+    reply: `1. Do NOT try to realign the bone.\n2. Immobilize with a splint + bandage.\n3. Apply ice wrapped in cloth — 20 min on/off.\n4. Elevate if possible.\n5. **Call 115** for spine/neck/pelvis — do not move patient.`,
     options: ['↩ Back to Medical', '📞 Show emergency numbers'],
   },
   '↩ Back to Medical': {
@@ -63,23 +63,23 @@ const BOT_FLOWS: Record<string, { reply: string; options?: string[] }> = {
     options: ['🏠 House / Building Fire', '🍳 Kitchen Fire', '🔌 Electrical Fire', '👕 Clothes on Fire', '🚗 Vehicle Fire'],
   },
   '🏠 House / Building Fire': {
-    reply: `**EVACUATE — call 16 (Fire Dept)**\n\n1. Alert everyone — shout "FIRE!"\n2. Crawl low under smoke.\n3. Close doors behind you to slow fire spread.\n4. Touch doors before opening — if hot, find another exit.\n5. Use stairs NEVER the elevator.\n6. Once out — **NEVER go back in**.`,
+    reply: `**EVACUATE — call 16 (Fire Dept)**\n\n1. Alert everyone — shout "FIRE!"\n2. Crawl low under smoke.\n3. Close doors behind you to slow fire spread.\n4. Touch door before opening — if hot, use another exit.\n5. Use stairs, NEVER the elevator.\n6. Once out — **NEVER go back in**.`,
     options: ['↩ Back to Fire', '📞 Show emergency numbers'],
   },
   '🍳 Kitchen Fire': {
-    reply: `1. **Small pan fire**: Slide lid over pan, turn off heat — **never use water on oil fire**.\n2. **Oven fire**: Turn off oven, keep door closed.\n3. If fire spreads beyond appliance — evacuate and call **16**.\n4. Use dry-powder extinguisher if trained.`,
+    reply: `1. **Small pan fire**: Slide lid over pan, turn off heat — **never use water on oil fire**.\n2. **Oven fire**: Turn off oven, keep door closed.\n3. Spreads beyond appliance → evacuate and call **16**.\n4. Use dry-powder extinguisher if trained.`,
     options: ['↩ Back to Fire', '📞 Show emergency numbers'],
   },
   '🔌 Electrical Fire': {
-    reply: `1. **Do NOT use water** — electrocution risk.\n2. Cut power at the mains breaker if safe.\n3. Use CO₂ or dry-powder extinguisher only.\n4. If smoke fills room — evacuate and call **16**.`,
+    reply: `1. **Do NOT use water** — electrocution risk.\n2. Cut power at the mains breaker if safe.\n3. Use CO₂ or dry-powder extinguisher only.\n4. Smoke fills room → evacuate and call **16**.`,
     options: ['↩ Back to Fire', '📞 Show emergency numbers'],
   },
   '👕 Clothes on Fire': {
-    reply: `**STOP — DROP — ROLL**\n\n1. STOP — do not run (spreads flames).\n2. DROP — fall to ground, cover your face.\n3. ROLL — back and forth to smother flames.\n4. Run cold water over burns for 10+ minutes.\n5. Call **115** for severe burns.`,
+    reply: `**STOP — DROP — ROLL**\n\n1. STOP — do not run.\n2. DROP — fall to ground, cover your face.\n3. ROLL — back and forth to smother flames.\n4. Run cold water over burns for 10+ minutes.\n5. **Call 115** for severe burns.`,
     options: ['↩ Back to Fire', '📞 Show emergency numbers'],
   },
   '🚗 Vehicle Fire': {
-    reply: `1. Pull over and turn off engine immediately.\n2. All occupants exit fast — leave belongings.\n3. Move 100m+ away from vehicle.\n4. Call **16 / 115**.\n5. **Do NOT open bonnet** if smoke from engine.`,
+    reply: `1. Pull over, turn off engine immediately.\n2. All occupants exit fast — leave belongings.\n3. Move 100m+ away from vehicle.\n4. **Call 16 / 115**.\n5. Do NOT open bonnet if smoke comes from engine.`,
     options: ['↩ Back to Fire', '📞 Show emergency numbers'],
   },
   '↩ Back to Fire': {
@@ -91,7 +91,7 @@ const BOT_FLOWS: Record<string, { reply: string; options?: string[] }> = {
     options: ['🚑 Injured person at scene', '🔥 Vehicle is smoking/fire', '🚦 Securing the scene'],
   },
   '🚑 Injured person at scene': {
-    reply: `1. **Call 115 / 1122 immediately**.\n2. Do NOT move injured person unless in immediate danger.\n3. Check breathing — if not breathing, start CPR.\n4. Control bleeding with direct pressure.\n5. Keep patient warm and calm.`,
+    reply: `1. **Call 115 / 1122 immediately**.\n2. Do NOT move injured person unless in immediate danger.\n3. Not breathing → start CPR.\n4. Control bleeding with direct pressure.\n5. Keep patient warm and calm.`,
     options: ['↩ Back to Accident', '📞 Show emergency numbers'],
   },
   '🔥 Vehicle is smoking/fire': {
@@ -99,7 +99,7 @@ const BOT_FLOWS: Record<string, { reply: string; options?: string[] }> = {
     options: ['↩ Back to Accident', '📞 Show emergency numbers'],
   },
   '🚦 Securing the scene': {
-    reply: `1. Turn on hazard lights of all vehicles.\n2. Place warning triangles 50m behind accident.\n3. Keep bystanders back.\n4. No smoking near scene.\n5. Call **1122** Rescue.`,
+    reply: `1. Turn on hazard lights of all vehicles.\n2. Place warning triangles 50m behind accident.\n3. Keep bystanders back — no smoking.\n4. Call **1122** Rescue.`,
     options: ['↩ Back to Accident', '📞 Show emergency numbers'],
   },
   '↩ Back to Accident': {
@@ -111,19 +111,19 @@ const BOT_FLOWS: Record<string, { reply: string; options?: string[] }> = {
     options: ['🔪 Active Threat / Robbery', '👊 Physical Assault', '📵 Stalking / Being Followed', '🏠 Home Intruder'],
   },
   '🔪 Active Threat / Robbery': {
-    reply: `**RUN — HIDE — FIGHT (in that order)**\n\n1. **RUN**: Escape if safe — leave belongings.\n2. **HIDE**: Get out of sight, silence your phone.\n3. **FIGHT**: Only as absolute last resort.\n4. Call **15** (Police) as soon as safe.\n5. Do NOT resist if they want only valuables.`,
+    reply: `**RUN — HIDE — FIGHT (in that order)**\n\n1. **RUN**: Escape if safe — leave belongings.\n2. **HIDE**: Get out of sight, silence phone.\n3. **FIGHT**: Only as absolute last resort.\n4. **Call 15** (Police) as soon as safe.\n5. Do NOT resist if they only want valuables.`,
     options: ['↩ Back to Crime', '📞 Show emergency numbers'],
   },
   '👊 Physical Assault': {
-    reply: `1. Get to a safe location first.\n2. Call **15** (Police) immediately.\n3. Do NOT wash or change clothes — preserve evidence.\n4. Photograph injuries and document everything.\n5. File a formal FIR at the nearest police station.`,
+    reply: `1. Get to a safe location first.\n2. **Call 15** (Police) immediately.\n3. Do NOT wash or change clothes — preserve evidence.\n4. Photograph injuries and document everything.\n5. File a formal FIR at the nearest police station.`,
     options: ['↩ Back to Crime', '📞 Show emergency numbers'],
   },
   '📵 Stalking / Being Followed': {
-    reply: `1. Go to a crowded public place or police station.\n2. Do NOT go home if you think you're being followed.\n3. Call someone you trust — stay on the phone.\n4. Note the person's description and vehicle.\n5. Call **15** — report it formally.`,
+    reply: `1. Go to a crowded public place or police station.\n2. Do NOT go home if you think you're being followed.\n3. Call someone you trust — stay on the phone.\n4. Note person's description, clothing, vehicle.\n5. **Call 15** — report it formally.`,
     options: ['↩ Back to Crime', '📞 Show emergency numbers'],
   },
   '🏠 Home Intruder': {
-    reply: `1. Get all household members into one locked room.\n2. Call **15** quietly — stay on the line.\n3. Do NOT confront the intruder.\n4. Exit through a window if possible.\n5. Make noise only if escape/help is impossible.`,
+    reply: `1. Get all household members into one locked room.\n2. **Call 15** quietly — stay on the line.\n3. Do NOT confront the intruder.\n4. Exit through a window if possible.\n5. Make noise only if escape/help is impossible.`,
     options: ['↩ Back to Crime', '📞 Show emergency numbers'],
   },
   '↩ Back to Crime': {
@@ -135,19 +135,19 @@ const BOT_FLOWS: Record<string, { reply: string; options?: string[] }> = {
     options: ['🏔️ Earthquake', '🌊 Flood', '🌀 Storm / High Winds', '🔥 Wildfire nearby'],
   },
   '🏔️ Earthquake': {
-    reply: `**DROP — COVER — HOLD ON**\n\n**During shaking:**\n1. DROP to hands and knees.\n2. COVER head/neck under a sturdy table or against an interior wall.\n3. HOLD ON until shaking stops — NEVER run outside.\n\n**After shaking:**\n1. Check for injuries.\n2. Watch for gas leaks — smell gas? Evacuate.\n3. Call **1122** if trapped.`,
+    reply: `**DROP — COVER — HOLD ON**\n\nDuring shaking:\n1. DROP to hands and knees.\n2. COVER head/neck under a sturdy table or interior wall.\n3. HOLD ON — NEVER run outside during shaking.\n\nAfter shaking:\n1. Check for injuries — don't move seriously injured people.\n2. Smell gas? Evacuate immediately.\n3. **Call 1122** if trapped.`,
     options: ['↩ Back to Disaster', '📞 Show emergency numbers'],
   },
   '🌊 Flood': {
-    reply: `1. Move to higher ground **immediately** — do NOT wait.\n2. Do NOT walk in moving water — 6 inches can knock you down.\n3. Do NOT drive through flooded roads.\n4. Turn off electricity at breaker if water enters home.\n5. Call **1122 / NDMA 1700**.`,
+    reply: `1. Move to higher ground **immediately** — do NOT wait.\n2. Do NOT walk in moving water — 6 inches can knock you down.\n3. Do NOT drive through flooded roads.\n4. Turn off electricity at breaker if water enters home.\n5. **Call 1122 / NDMA 1700**.`,
     options: ['↩ Back to Disaster', '📞 Show emergency numbers'],
   },
   '🌀 Storm / High Winds': {
-    reply: `1. Stay indoors — away from windows and glass.\n2. Go to the lowest interior room.\n3. Unplug electronics.\n4. Fill bathtubs with water in case supply is cut.\n5. Monitor NDMA / PMD alerts.`,
+    reply: `1. Stay indoors — away from windows.\n2. Go to the lowest interior room.\n3. Unplug electronics.\n4. Fill bathtubs with water in case supply is cut.\n5. Monitor NDMA / PMD alerts.`,
     options: ['↩ Back to Disaster', '📞 Show emergency numbers'],
   },
   '🔥 Wildfire nearby': {
-    reply: `1. Evacuate when ordered — **don't wait to see the fire**.\n2. Close all windows, doors, vents — leave them unlocked.\n3. Take go-bag: documents, medication, water, charger.\n4. Drive away with headlights ON.\n5. Call **16 / 1122**.`,
+    reply: `1. **Evacuate when ordered** — don't wait to see the fire.\n2. Close all windows, doors, vents — leave them unlocked.\n3. Take go-bag: documents, medication, water, charger.\n4. Drive away with headlights ON.\n5. **Call 16 / 1122**.`,
     options: ['↩ Back to Disaster', '📞 Show emergency numbers'],
   },
   '↩ Back to Disaster': {
@@ -155,11 +155,11 @@ const BOT_FLOWS: Record<string, { reply: string; options?: string[] }> = {
     options: ['🏔️ Earthquake', '🌊 Flood', '🌀 Storm / High Winds', '🔥 Wildfire nearby'],
   },
   '📞 Emergency Numbers': {
-    reply: `**Pakistan Emergency Numbers:**\n\n🚑 **115** — Ambulance / Medical\n🚒 **16** — Fire Brigade\n🚔 **15** — Police\n🦺 **1122** — Rescue Punjab\n🌊 **1700** — NDMA Disaster\n🏥 **021-111-11-EDHI** — Edhi Foundation`,
+    reply: `**Pakistan Emergency Numbers**\n\n🚑 **115** — Ambulance / Medical\n🚒 **16** — Fire Brigade\n🚔 **15** — Police\n🦺 **1122** — Rescue Punjab\n🌊 **1700** — NDMA Disaster\n🏥 **021-111-11-EDHI** — Edhi Foundation`,
     options: ['↩ Back to start'],
   },
   '📞 Show emergency numbers': {
-    reply: `**Pakistan Emergency Numbers:**\n\n🚑 **115** — Ambulance / Medical\n🚒 **16** — Fire Brigade\n🚔 **15** — Police\n🦺 **1122** — Rescue Punjab\n🌊 **1700** — NDMA Disaster\n🏥 **021-111-11-EDHI** — Edhi Foundation`,
+    reply: `**Pakistan Emergency Numbers**\n\n🚑 **115** — Ambulance / Medical\n🚒 **16** — Fire Brigade\n🚔 **15** — Police\n🦺 **1122** — Rescue Punjab\n🌊 **1700** — NDMA Disaster\n🏥 **021-111-11-EDHI** — Edhi Foundation`,
     options: ['↩ Back to start'],
   },
   '↩ Back to start': {
@@ -180,7 +180,7 @@ function formatText(text: string) {
       <span key={i}>
         {parts.map((part, j) =>
           j % 2 === 1
-            ? <strong key={j} className="text-white font-semibold">{part}</strong>
+            ? <strong key={j} className="font-semibold text-white">{part}</strong>
             : part
         )}
         {i < arr.length - 1 && <br />}
@@ -189,20 +189,21 @@ function formatText(text: string) {
   });
 }
 
-// ─── Typing indicator ─────────────────────────────────────────────────────────
-function TypingIndicator() {
+// ─── Typing dots ──────────────────────────────────────────────────────────────
+function TypingDots() {
   return (
-    <div className="flex items-start gap-2.5">
-      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent-gold/30 to-accent-coral/30 border border-white/10 flex items-center justify-center flex-shrink-0">
-        <Bot className="w-3.5 h-3.5 text-accent-gold" />
+    <div className="flex items-start gap-2">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+        style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(139,92,246,0.25))', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <Bot className="w-3.5 h-3.5" style={{ color: 'var(--accent-gold)' }} />
       </div>
-      <div className="bg-bg-elevated border border-white/[0.06] rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-tl-sm"
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
         {[0, 1, 2].map(i => (
-          <motion.span
-            key={i}
-            className="w-1.5 h-1.5 rounded-full bg-white/40"
-            animate={{ y: [0, -4, 0] }}
-            transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+          <motion.span key={i} className="block w-1.5 h-1.5 rounded-full"
+            style={{ background: 'var(--text-tertiary)' }}
+            animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
           />
         ))}
       </div>
@@ -226,15 +227,23 @@ export default function EmergencyChat() {
       setMessages([{ id: 0, from: 'bot', text: flow.reply, options: flow.options, time: getTime() }]);
       setIdCounter(1);
     }
+    if (open) setTimeout(() => inputRef.current?.focus(), 300);
   }, [open]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  function addMessages(userMsg: Message, botMsg: Message, nextId: number) {
-    setMessages(prev => [...prev, userMsg, botMsg]);
-    setIdCounter(nextId + 2);
+  function reset() {
+    setMessages([]);
+    setInput('');
+    setLoading(false);
+    setIdCounter(0);
+    const flow = BOT_FLOWS['start'];
+    setTimeout(() => {
+      setMessages([{ id: 0, from: 'bot', text: flow.reply, options: flow.options, time: getTime() }]);
+      setIdCounter(1);
+    }, 50);
   }
 
   function handleOption(option: string) {
@@ -249,7 +258,8 @@ export default function EmergencyChat() {
           text: "I don't have specific guidance for that. Please call emergency services:\n🚑 **115** · 🚒 **16** · 🚔 **15** · 🦺 **1122**",
           options: ['↩ Back to start'], time: getTime(),
         };
-    addMessages(userMsg, botMsg, nextId);
+    setMessages(prev => [...prev, userMsg, botMsg]);
+    setIdCounter(nextId + 2);
   }
 
   async function handleSend() {
@@ -263,7 +273,6 @@ export default function EmergencyChat() {
     setIdCounter(nextId + 2);
     setLoading(true);
 
-    // Build history from current messages for context
     const history = messages.map(m => ({ role: m.from === 'user' ? 'user' : 'model', text: m.text }));
 
     try {
@@ -274,9 +283,9 @@ export default function EmergencyChat() {
       });
       const data = await res.json();
       setMessages(prev => [...prev, {
-        id: nextId + 1, from: 'bot',
+        id: nextId + 1, from: 'bot', isAI: true,
         text: data.reply ?? "Sorry, I couldn't respond. For emergencies call 115.",
-        isAI: true, time: getTime(),
+        time: getTime(),
       }]);
     } catch {
       setMessages(prev => [...prev, {
@@ -286,7 +295,6 @@ export default function EmergencyChat() {
       }]);
     } finally {
       setLoading(false);
-      setIdCounter(nextId + 2);
     }
   }
 
@@ -299,150 +307,218 @@ export default function EmergencyChat() {
 
   return (
     <>
-      {/* ── Floating trigger button ─────────────────────────────────────────── */}
+      {/* ── Floating trigger ─────────────────────────────────────────────────── */}
       <AnimatePresence>
         {!open && (
           <motion.button
-            key="trigger"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.94 }}
+            key="fab"
+            initial={{ opacity: 0, scale: 0.7, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.7, y: 10 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-50 group flex items-center gap-2 pl-3 pr-4 py-3 rounded-full bg-gradient-to-r from-accent-gold to-accent-coral shadow-lg shadow-glow-gold border border-white/10"
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-full shadow-lg"
+            style={{
+              background: 'linear-gradient(135deg, var(--accent-gold), var(--accent-purple))',
+              boxShadow: '0 4px 24px rgba(59,130,246,0.35), 0 0 0 1px rgba(255,255,255,0.08)',
+            }}
             title="Emergency AI Assistant"
           >
             <div className="relative">
               <Bot className="w-5 h-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-accent-gold animate-pulse" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border-2 animate-pulse"
+                style={{ background: 'var(--accent-emerald)', borderColor: 'transparent' }} />
             </div>
-            <span className="text-sm font-semibold text-white">Emergency AI</span>
+            <span className="text-sm font-semibold text-white tracking-wide">Emergency AI</span>
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* ── Chat window ─────────────────────────────────────────────────────── */}
+      {/* ── Chat window ──────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {open && (
           <motion.div
-            key="window"
-            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            key="chat"
+            initial={{ opacity: 0, y: 20, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-            className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-16px)] flex flex-col rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl shadow-black/70"
-            style={{ height: 'min(620px, calc(100vh - 80px))' }}
+            exit={{ opacity: 0, y: 20, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+            className="fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl overflow-hidden"
+            style={{
+              width: 'min(420px, calc(100vw - 16px))',
+              height: 'min(620px, calc(100vh - 80px))',
+              background: 'var(--bg-base)',
+              border: '1px solid var(--border-default)',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+            }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3.5 bg-gradient-to-r from-gray-900 via-gray-900 to-gray-800 border-b border-white/[0.07]">
+            <div className="flex items-center justify-between px-4 py-3.5 flex-shrink-0"
+              style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-default)' }}>
               <div className="flex items-center gap-3">
-                <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-accent-gold/80 to-accent-coral/80 flex items-center justify-center shadow-md">
-                  <Bot className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-gray-900 animate-pulse" />
+                {/* Avatar */}
+                <div className="relative w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(139,92,246,0.3))', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <Bot className="w-4.5 h-4.5" style={{ width: 18, height: 18, color: 'var(--accent-gold)' }} />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 animate-pulse"
+                    style={{ background: 'var(--accent-emerald)', borderColor: 'var(--bg-elevated)' }} />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-semibold text-white leading-none">Emergency Assistant</p>
-                    <span className="flex items-center gap-0.5 bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-[9px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
-                      <Sparkles className="w-2.5 h-2.5" style={{ width: 9, height: 9 }} /> AI
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Emergency Assistant</span>
+                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                      style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent-purple)' }}>
+                      <Sparkles style={{ width: 8, height: 8 }} />AI
                     </span>
                   </div>
-                  <p className="text-[11px] text-white/40 mt-0.5">Gemini · Always available</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>Gemini · Always available</p>
                 </div>
               </div>
-              <button
-                onClick={() => setOpen(false)}
-                className="w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
-              >
-                <X className="w-3.5 h-3.5 text-white/60" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={reset} title="Restart conversation"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                  style={{ color: 'var(--text-tertiary)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <RotateCcw style={{ width: 13, height: 13 }} />
+                </button>
+                <button onClick={() => setOpen(false)} title="Close"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                  style={{ color: 'var(--text-tertiary)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <X style={{ width: 14, height: 14 }} />
+                </button>
+              </div>
             </div>
 
-            {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4 bg-[#0c0c0f] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
-              {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.from === 'user' ? 'justify-end' : 'items-start gap-2.5'}`}>
+            {/* Message area */}
+            <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4"
+              style={{ background: 'var(--bg-base)', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
 
+              {messages.map(msg => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`flex ${msg.from === 'user' ? 'justify-end' : 'items-start gap-2'}`}
+                >
                   {/* Bot avatar */}
                   {msg.from === 'bot' && (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent-gold/30 to-accent-coral/30 border border-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Bot className="w-3.5 h-3.5 text-accent-gold" />
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                      style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.2))', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <Bot style={{ width: 13, height: 13, color: 'var(--accent-gold)' }} />
                     </div>
                   )}
 
-                  <div className={`flex flex-col gap-1.5 ${msg.from === 'user' ? 'items-end max-w-[82%]' : 'items-start max-w-[88%]'}`}>
+                  <div className={`flex flex-col gap-1 ${msg.from === 'user' ? 'items-end max-w-[80%]' : 'items-start max-w-[86%]'}`}>
                     {/* Bubble */}
-                    <div className={`px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed ${
-                      msg.from === 'user'
-                        ? 'bg-gradient-to-br from-accent-gold/25 to-accent-coral/20 text-white border border-accent-gold/20 rounded-br-sm'
-                        : 'bg-[#1a1a22] text-white/85 border border-white/[0.06] rounded-tl-sm'
-                    }`}>
+                    <div
+                      className="px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed"
+                      style={msg.from === 'user' ? {
+                        background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.12))',
+                        border: '1px solid rgba(59,130,246,0.25)',
+                        color: 'var(--text-primary)',
+                        borderBottomRightRadius: 4,
+                      } : {
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--border-default)',
+                        color: 'var(--text-secondary)',
+                        borderTopLeftRadius: 4,
+                      }}
+                    >
                       {/* AI badge */}
                       {msg.from === 'bot' && msg.isAI && (
-                        <span className="inline-flex items-center gap-1 bg-purple-500/15 border border-purple-400/20 text-purple-300 text-[9px] font-semibold px-1.5 py-0.5 rounded-full mb-1.5 mr-1">
-                          <Sparkles style={{ width: 8, height: 8 }} /> AI
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full mb-1.5 mr-1"
+                          style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)', color: 'var(--accent-purple)' }}>
+                          <Sparkles style={{ width: 8, height: 8 }} />AI
                         </span>
                       )}
                       {formatText(msg.text)}
                     </div>
 
                     {/* Timestamp */}
-                    <span className="text-[10px] text-white/20 px-1">{msg.time}</span>
+                    <span className="text-[10px] px-1" style={{ color: 'var(--text-muted)' }}>{msg.time}</span>
 
-                    {/* Quick-option chips */}
+                    {/* Option chips */}
                     {msg.from === 'bot' && msg.options && msg.options.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-0.5">
                         {msg.options.map(opt => (
-                          <button
-                            key={opt}
-                            onClick={() => handleOption(opt)}
-                            disabled={loading}
-                            className="text-[11px] font-medium text-white/65 hover:text-white bg-[#1a1a22] hover:bg-[#22222e] disabled:opacity-40 border border-white/[0.08] hover:border-white/[0.15] px-3 py-1.5 rounded-xl transition-all duration-150"
-                          >
+                          <button key={opt} onClick={() => handleOption(opt)} disabled={loading}
+                            className="text-[11px] font-medium px-3 py-1.5 rounded-xl transition-all duration-150 disabled:opacity-40"
+                            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = 'var(--bg-hover)';
+                              e.currentTarget.style.borderColor = 'var(--border-hover)';
+                              e.currentTarget.style.color = 'var(--text-primary)';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = 'var(--bg-elevated)';
+                              e.currentTarget.style.borderColor = 'var(--border-default)';
+                              e.currentTarget.style.color = 'var(--text-secondary)';
+                            }}>
                             {opt}
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
 
-              {/* Typing indicator */}
-              {loading && <TypingIndicator />}
-
+              {loading && <TypingDots />}
               <div ref={bottomRef} />
             </div>
 
             {/* Emergency numbers strip */}
-            <div className="flex items-center justify-center gap-3 px-3 py-1.5 bg-[#0c0c0f] border-t border-white/[0.04]">
-              <Phone className="w-3 h-3 text-white/20 flex-shrink-0" />
-              {['🚑 115', '🚒 16', '🚔 15', '🦺 1122'].map(n => (
-                <span key={n} className="text-[10px] text-white/25 font-medium">{n}</span>
+            <div className="flex items-center justify-center gap-3 px-3 py-1.5 flex-shrink-0"
+              style={{ background: 'var(--bg-elevated)', borderTop: '1px solid var(--border-subtle)' }}>
+              <AlertTriangle style={{ width: 10, height: 10, color: 'var(--accent-coral)' }} />
+              {[{ n: '115', label: 'Medical' }, { n: '16', label: 'Fire' }, { n: '15', label: 'Police' }, { n: '1122', label: 'Rescue' }].map(e => (
+                <span key={e.n} className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                  <span style={{ color: 'var(--accent-coral)' }}>{e.n}</span> {e.label}
+                </span>
               ))}
             </div>
 
             {/* Input bar */}
-            <div className="flex items-end gap-2 px-3 pb-3 pt-2 bg-[#0c0c0f] border-t border-white/[0.06]">
+            <div className="flex items-end gap-2 px-3 pb-3 pt-2.5 flex-shrink-0"
+              style={{ background: 'var(--bg-elevated)', borderTop: '1px solid var(--border-default)' }}>
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask anything or describe your emergency…"
+                placeholder="Type your question or describe the emergency…"
                 disabled={loading}
                 rows={1}
-                className="flex-1 resize-none bg-[#1a1a22] border border-white/[0.08] focus:border-accent-gold/30 text-white text-[13px] placeholder-white/25 rounded-xl px-3.5 py-2.5 outline-none transition-colors leading-relaxed disabled:opacity-50 max-h-24 overflow-y-auto scrollbar-none"
-                style={{ scrollbarWidth: 'none' }}
+                className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-[13px] outline-none transition-all leading-relaxed disabled:opacity-50"
+                style={{
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-default)',
+                  color: 'var(--text-primary)',
+                  maxHeight: 96,
+                  scrollbarWidth: 'none',
+                }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(59,130,246,0.4)'; }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border-default)'; }}
               />
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileTap={{ scale: 0.88 }}
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-gold to-accent-coral flex items-center justify-center flex-shrink-0 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity shadow-md"
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-opacity"
+                style={{
+                  background: input.trim() && !loading
+                    ? 'linear-gradient(135deg, var(--accent-gold), var(--accent-purple))'
+                    : 'var(--bg-surface)',
+                  opacity: !input.trim() || loading ? 0.35 : 1,
+                  cursor: !input.trim() || loading ? 'not-allowed' : 'pointer',
+                }}
               >
-                <Send className="w-4 h-4 text-white" style={{ width: 15, height: 15 }} />
+                <Send style={{ width: 15, height: 15, color: 'white' }} />
               </motion.button>
             </div>
           </motion.div>

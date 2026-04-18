@@ -4,37 +4,45 @@ import Head from 'next/head';
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from '../utils/ThemeContext';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import EmergencyChat from '../components/EmergencyChat';
 import AmbientBackground from '../components/AmbientBackground';
 import CursorGlow from '../components/CursorGlow';
+import Footer from '../components/Footer';
 
-// Pages where the floating chat should NOT appear
-const HIDE_CHAT_ON = ['/auth', '/auth/index'];
-// Pages that already have their own background design
+const HIDE_CHAT_ON = ['/auth'];
 const HIDE_AMBIENT_ON = ['/auth'];
-// Pages where the cursor glow should not render (e.g. auth has its own dark bg)
 const HIDE_CURSOR_ON = ['/auth'];
+const HIDE_FOOTER_ON = ['/auth', '/sos', '/chat', '/admin'];
 
-export default function App({ 
-  Component, 
-  pageProps: { session, ...pageProps } 
+export default function App({
+  Component,
+  pageProps: { session, ...pageProps }
 }: AppProps) {
   const router = useRouter();
   const showChat = !HIDE_CHAT_ON.some(p => router.pathname.startsWith(p));
   const showAmbient = !HIDE_AMBIENT_ON.some(p => router.pathname.startsWith(p));
+  const showFooter = !HIDE_FOOTER_ON.some(p => router.pathname.startsWith(p));
+
+  useEffect(() => {
+    const isAuthRoute = router.pathname.startsWith('/auth');
+    document.body.classList.toggle('auth-page', isAuthRoute);
+    return () => { document.body.classList.remove('auth-page'); };
+  }, [router.pathname]);
 
   return (
     <ThemeProvider>
       <SessionProvider session={session}>
         <Head>
-          <title>SOS Emergency App</title>
-          <meta name="description" content="Emergency SOS application with AI-powered fear detection" />
+          <title>SOS Emergency — AI-Powered Safety</title>
+          <meta name="description" content="Emergency SOS application with AI-powered fear detection and real-time location sharing" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
         {showAmbient && <AmbientBackground />}
         {!HIDE_CURSOR_ON.some(p => router.pathname.startsWith(p)) && <CursorGlow />}
         <Component {...pageProps} />
         {showChat && <EmergencyChat />}
+        {showFooter && <Footer />}
       </SessionProvider>
     </ThemeProvider>
   );

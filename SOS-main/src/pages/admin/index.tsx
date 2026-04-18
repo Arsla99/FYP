@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Navbar from '../../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LayoutDashboard, Users, FileText, ShieldCheck, Trash2, Plus, X, AlertCircle, FileCheck } from 'lucide-react';
 
 interface User {
   _id: string;
@@ -186,21 +187,21 @@ export default function AdminDashboard() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="relative w-20 h-20">
-          <div className="absolute inset-0 rounded-full border-4 border-white/10" />
-          <div className="absolute inset-0 rounded-full border-t-4 border-orange-500 animate-spin" />
+          <div className="absolute inset-0 rounded-full border-4 border-border-default" />
+          <div className="absolute inset-0 rounded-full border-t-4 border-accent-gold animate-spin" />
         </div>
       </div>
     );
   }
 
   const TABS = [
-    { key: 'overview', label: 'Overview', icon: 'dashboard' },
-    { key: 'users', label: 'Users', icon: 'people' },
-    { key: 'blogs', label: 'Blogs', icon: 'article' },
+    { key: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { key: 'users', label: 'Users', icon: Users },
+    { key: 'blogs', label: 'Blogs', icon: FileText },
   ];
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-hidden">
+    <div className="min-h-screen font-sans bg-bg-base text-text-primary">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8 pt-24 max-w-7xl">
@@ -210,16 +211,16 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-wider mb-4">
-            <span className="material-icons text-sm">admin_panel_settings</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-xs font-semibold uppercase tracking-wider mb-4">
+            <ShieldCheck className="w-4 h-4" />
             Admin Portal
           </div>
           <h1 className="text-4xl font-extrabold mb-2">
-            <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+            <span className="text-gradient">
               Admin Dashboard
             </span>
           </h1>
-          <p className="text-white/40 text-sm">Manage users, content, and platform analytics</p>
+          <p className="text-text-tertiary text-sm">Manage users, content, and platform analytics</p>
         </motion.div>
 
         {/* Navigation Tabs */}
@@ -228,24 +229,24 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="flex justify-center mb-10"
         >
-          <div className="relative flex p-1 rounded-2xl bg-white/5 border border-white/10">
+          <div className="relative flex p-1 rounded-2xl bg-bg-elevated border border-border-default">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors z-10
                   ${activeTab === tab.key
-                    ? 'text-white'
-                    : 'text-white/40 hover:text-white/70'
+                    ? 'text-text-primary'
+                    : 'text-text-tertiary hover:text-text-secondary'
                 }`}
               >
-                <span className="material-icons text-[17px]">{tab.icon}</span>
+                <tab.icon className="w-[17px] h-[17px]" />
                 {tab.label}
               </button>
             ))}
             <motion.div
               layoutId="adminTabIndicator"
-              className="absolute inset-y-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl -z-0"
+              className="absolute inset-y-1 bg-gradient-to-r from-accent-gold to-accent-coral rounded-xl -z-0"
               transition={{ type: 'spring', stiffness: 400, damping: 35 }}
               style={{
                 width: `${100 / TABS.length}%`,
@@ -267,23 +268,23 @@ export default function AdminDashboard() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
             >
               {[
-                { icon: 'people', label: 'Total Users', value: stats.totalUsers, color: 'from-blue-500 to-blue-600', shadow: 'shadow-blue-500/20' },
-                { icon: 'admin_panel_settings', label: 'Admin Users', value: stats.adminUsers, color: 'from-green-500 to-emerald-600', shadow: 'shadow-green-500/20' },
-                { icon: 'article', label: 'Total Blogs', value: stats.totalBlogs, color: 'from-purple-500 to-purple-600', shadow: 'shadow-purple-500/20' },
-                { icon: 'publish', label: 'Published Blogs', value: stats.publishedBlogs, color: 'from-orange-500 to-red-600', shadow: 'shadow-orange-500/20' },
+                { icon: Users, label: 'Total Users', value: stats.totalUsers, color: 'from-accent-blue to-accent-blue', shadow: 'shadow-accent-blue/20' },
+                { icon: ShieldCheck, label: 'Admin Users', value: stats.adminUsers, color: 'from-accent-emerald to-accent-emerald', shadow: 'shadow-accent-emerald/20' },
+                { icon: FileText, label: 'Total Blogs', value: stats.totalBlogs, color: 'from-accent-purple to-accent-purple', shadow: 'shadow-accent-purple/20' },
+                { icon: FileCheck, label: 'Published Blogs', value: stats.publishedBlogs, color: 'from-accent-gold to-accent-coral', shadow: 'shadow-accent-gold/20' },
               ].map((stat) => (
                 <motion.div
                   key={stat.label}
                   whileHover={{ y: -4, scale: 1.01 }}
-                  className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl p-6 shadow-2xl shadow-black/20 hover-lift"
+                  className="relative overflow-hidden rounded-3xl border border-border-default card p-6 hover-lift"
                 >
                   <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.color} opacity-10 rounded-full blur-2xl -mr-8 -mt-8`} />
                   <div className="relative z-10">
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4 shadow-lg ${stat.shadow}`}>
-                      <span className="material-icons text-white text-xl">{stat.icon}</span>
+                      <stat.icon className="w-5 h-5 text-text-primary" />
                     </div>
-                    <p className="text-white/40 text-xs font-medium uppercase tracking-wider">{stat.label}</p>
-                    <p className="text-3xl font-bold text-white mt-1">{stat.value}</p>
+                    <p className="text-text-tertiary text-xs font-medium uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-3xl font-bold text-text-primary mt-1">{stat.value}</p>
                   </div>
                 </motion.div>
               ))}
@@ -298,57 +299,57 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl shadow-2xl shadow-black/20 overflow-hidden"
+              className="rounded-3xl border border-border-default bg-bg-surface overflow-hidden"
             >
-              <div className="px-6 py-5 border-b border-white/[0.06] flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span className="material-icons text-blue-400">people</span>
+              <div className="px-6 py-5 border-b border-border-default flex items-center justify-between">
+                <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                  <Users className="w-5 h-5 text-accent-blue" />
                   User Management
                 </h2>
-                <span className="text-xs text-white/40 bg-white/5 px-3 py-1 rounded-full border border-white/10">{users.length} users</span>
+                <span className="text-xs text-text-tertiary bg-bg-elevated px-3 py-1 rounded-full border border-border-default">{users.length} users</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-white/40 uppercase tracking-wider">Name</th>
-                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-white/40 uppercase tracking-wider">Email</th>
-                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-white/40 uppercase tracking-wider">Role</th>
-                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-white/40 uppercase tracking-wider">Joined</th>
-                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-white/40 uppercase tracking-wider">Contacts</th>
-                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-white/40 uppercase tracking-wider">Actions</th>
+                    <tr className="border-b border-border-default bg-bg-elevated/50">
+                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-text-tertiary uppercase tracking-wider">Name</th>
+                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-text-tertiary uppercase tracking-wider">Email</th>
+                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-text-tertiary uppercase tracking-wider">Role</th>
+                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-text-tertiary uppercase tracking-wider">Joined</th>
+                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-text-tertiary uppercase tracking-wider">Contacts</th>
+                      <th className="pb-3 pt-3 px-6 text-xs font-semibold text-text-tertiary uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {users.map((user) => (
-                      <tr key={user._id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                      <tr key={user._id} className="border-b border-border-default hover:bg-bg-hover transition-colors">
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                            <div className="w-8 h-8 rounded-full bg-accent-blue flex items-center justify-center text-text-primary text-xs font-bold">
                               {user.name.charAt(0).toUpperCase()}
                             </div>
-                            <span className="text-white font-medium text-sm">{user.name}</span>
+                            <span className="text-text-primary font-medium text-sm">{user.name}</span>
                           </div>
                         </td>
-                        <td className="py-4 px-6 text-white/60 text-sm">{user.email}</td>
+                        <td className="py-4 px-6 text-text-secondary text-sm">{user.email}</td>
                         <td className="py-4 px-6">
                           <select
                             value={user.role}
                             onChange={(e) => updateUserRole(user._id, e.target.value)}
-                            className="bg-white/5 border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                            className="bg-bg-elevated border border-border-default text-text-primary text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-accent-purple/30"
                           >
                             <option value="user">User</option>
                             <option value="admin">Admin</option>
                           </select>
                         </td>
-                        <td className="py-4 px-6 text-white/50 text-sm">{new Date(user.createdAt).toLocaleDateString()}</td>
-                        <td className="py-4 px-6 text-white/50 text-sm">{user.contacts?.length || 0} contacts</td>
+                        <td className="py-4 px-6 text-text-secondary text-sm">{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td className="py-4 px-6 text-text-secondary text-sm">{user.contacts?.length || 0} contacts</td>
                         <td className="py-4 px-6">
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => deleteUser(user._id)}
-                            className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                            className="bg-accent-coral/10 hover:bg-accent-coral/20 text-accent-coral border border-accent-coral/20 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                           >
                             Delete
                           </motion.button>
@@ -358,8 +359,8 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
                 {users.length === 0 && (
-                  <div className="text-center py-12 text-white/40">
-                    <span className="material-icons text-4xl mb-2">people_outline</span>
+                  <div className="text-center py-12 text-text-tertiary">
+                    <Users className="w-10 h-10 text-text-muted mb-2 mx-auto" />
                     <p>No users found</p>
                   </div>
                 )}
@@ -377,17 +378,17 @@ export default function AdminDashboard() {
               transition={{ duration: 0.3 }}
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span className="material-icons text-purple-400">article</span>
+                <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-accent-purple" />
                   Blog Management
                 </h2>
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => router.push('/admin/blogs/create')}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-green-500/20 transition-all flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold shadow-lg transition-all flex items-center gap-1.5 btn-primary"
                 >
-                  <span className="material-icons text-sm">add</span>
+                  <Plus className="w-4 h-4" />
                   Create New Blog
                 </motion.button>
               </div>
@@ -396,29 +397,29 @@ export default function AdminDashboard() {
                   <motion.div 
                     key={blog._id} 
                     whileHover={{ scale: 1.005 }}
-                    className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl p-5 shadow-xl shadow-black/10"
+                    className="rounded-3xl border border-border-default card p-5"
                   >
                     <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-bold text-lg text-white">{blog.title}</h3>
+                          <h3 className="font-bold text-lg text-text-primary">{blog.title}</h3>
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
                             (blog.isPublished || blog.published)
-                              ? 'bg-green-500/15 text-green-400 border border-green-500/20'
-                              : 'bg-amber-500/15 text-amber-400 border border-amber-500/20'
+                              ? 'bg-accent-emerald/15 text-accent-emerald border border-accent-emerald/20'
+                              : 'bg-accent-gold/15 text-accent-gold border border-accent-gold/20'
                           }`}>
                             {(blog.isPublished || blog.published) ? 'Published' : 'Draft'}
                           </span>
                         </div>
-                        <p className="text-white/50 text-sm mb-2">By {blog.author?.name || 'Unknown'} · {blog.category || 'general'}</p>
-                        <p className="text-white/40 text-sm line-clamp-2">{blog.content.substring(0, 180)}...</p>
+                        <p className="text-text-secondary text-sm mb-2">By {blog.author?.name || 'Unknown'} · {blog.category || 'general'}</p>
+                        <p className="text-text-tertiary text-sm line-clamp-2">{blog.content.substring(0, 180)}...</p>
                       </div>
                       <div className="flex flex-wrap gap-2 shrink-0">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => router.push(`/admin/blogs/edit/${blog._id}`)}
-                          className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                          className="bg-bg-elevated hover:bg-bg-hover text-text-primary border border-border-default px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
                         >
                           Edit
                         </motion.button>
@@ -428,8 +429,8 @@ export default function AdminDashboard() {
                           onClick={() => togglePublish(blog._id, !(blog.isPublished || blog.published))}
                           className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
                             (blog.isPublished || blog.published)
-                              ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20'
-                              : 'bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20'
+                              ? 'bg-accent-gold/10 hover:bg-accent-gold/20 text-accent-gold border border-accent-gold/20'
+                              : 'bg-accent-emerald/10 hover:bg-accent-emerald/20 text-accent-emerald border border-accent-emerald/20'
                           }`}
                         >
                           {(blog.isPublished || blog.published) ? 'Unpublish' : 'Publish'}
@@ -437,7 +438,7 @@ export default function AdminDashboard() {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                          className="bg-accent-coral/10 hover:bg-accent-coral/20 text-accent-coral border border-accent-coral/20 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
                         >
                           Delete
                         </motion.button>
@@ -446,9 +447,9 @@ export default function AdminDashboard() {
                   </motion.div>
                 ))}
                 {blogs.length === 0 && (
-                  <div className="text-center py-12 rounded-3xl border border-white/[0.08] bg-gray-900/60">
-                    <span className="material-icons text-4xl text-white/20 mb-2">article</span>
-                    <p className="text-white/40">No blogs found</p>
+                  <div className="text-center py-12 rounded-3xl border border-border-default card">
+                    <FileText className="w-10 h-10 text-text-muted mb-2 mx-auto" />
+                    <p className="text-text-tertiary">No blogs found</p>
                   </div>
                 )}
               </div>

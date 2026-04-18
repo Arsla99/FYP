@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, useSpring, useMotionValue } from 'framer-motion';
-import { useTheme } from '../utils/ThemeContext';
 
 export default function CursorGlow() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const [isVisible, setIsVisible] = useState(false);
   
   const cursorX = useMotionValue(-100);
@@ -52,9 +49,7 @@ export default function CursorGlow() {
         <div 
           className="w-[400px] h-[400px] rounded-full blur-[120px] opacity-30 transition-colors duration-500"
           style={{
-            background: isDark 
-              ? 'radial-gradient(circle, rgba(249,115,22,0.4) 0%, rgba(239,68,68,0.2) 50%, transparent 70%)'
-              : 'radial-gradient(circle, rgba(249,115,22,0.25) 0%, rgba(239,68,68,0.1) 50%, transparent 70%)'
+            background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(139,92,246,0.08) 50%, transparent 70%)'
           }}
         />
       </motion.div>
@@ -72,7 +67,7 @@ export default function CursorGlow() {
         <div 
           className="w-2 h-2 rounded-full opacity-60"
           style={{
-            background: isDark ? 'rgba(249,115,22,0.8)' : 'rgba(249,115,22,0.6)'
+            background: 'rgba(59,130,246,0.6)'
           }}
         />
       </motion.div>

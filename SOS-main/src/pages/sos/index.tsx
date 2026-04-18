@@ -6,6 +6,8 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Navbar from '../../components/Navbar';
 
+import { Shield, Crown, MapPin, Crosshair, MapPinOff, ExternalLink, Copy, Flame, Heart, Car, LifeBuoy, Activity, Mic, Square, RotateCcw, FlaskConical, Share2, Contact2, Battery, BookOpen, HelpCircle, ChevronRight, Users, ShieldAlert } from 'lucide-react';
+
 const AUDIO_CHUNK_DURATION = 15000; // 15 seconds — reduces Gemini API token usage 3×
 const SOS_FEAR_THRESHOLD = 2; // Number of consecutive distress detections to trigger SOS
 
@@ -97,25 +99,47 @@ export default function Home() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Authentication check using NextAuth
+  // Authentication check — NextAuth session + localStorage token fallback
   useEffect(() => {
-    if (status === 'loading') {
-      // Still loading session
-      return;
-    }
+    const checkAuth = async () => {
+      if (status === 'loading') return;
 
-    if (status === 'unauthenticated' || !session) {
-      // Not authenticated, redirect to login
-      router.push('/auth');
-      return;
-    }
+      if (status === 'authenticated' && session?.user) {
+        setUserRole(session.user.role || 'user');
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
 
-    if (status === 'authenticated' && session?.user) {
-      // Authenticated via NextAuth
-      setUserRole(session.user.role || 'user');
-      setIsAuthenticated(true);
-      setIsLoading(false);
-    }
+      // Fallback to legacy localStorage token
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        router.push('/auth');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUserRole(userData.role || 'user');
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem('token');
+          router.push('/auth');
+        }
+      } catch {
+        localStorage.removeItem('token');
+        router.push('/auth');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
   }, [session, status, router]);
 
   // Fetch user's custom keywords
@@ -387,35 +411,33 @@ export default function Home() {
   // Show loading while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-        {/* Ambient orbs */}
-        <div className="absolute inset-0 bg-gray-950" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-orb-slow pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-red-500/10 rounded-full blur-3xl animate-orb-slow-reverse pointer-events-none" />
+      <div className="min-h-screen flex items-center justify-center bg-bg-base relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-gold/5 rounded-full blur-3xl animate-orb-float pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent-coral/5 rounded-full blur-3xl animate-orb-float-reverse pointer-events-none" />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 bg-gray-900/60 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/20 p-12 flex flex-col items-center"
+          className="relative z-10 card p-12 flex flex-col items-center"
         >
           <div className="relative w-20 h-20 mb-6">
-            <div className="absolute inset-0 rounded-full border-4 border-white/10" />
+            <div className="absolute inset-0 rounded-full border-4 border-border-default" />
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1.1, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-0 rounded-full border-t-4 border-orange-500"
+              className="absolute inset-0 rounded-full border-t-4 border-accent-gold"
             />
             <motion.div
               animate={{ rotate: -360 }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-2 rounded-full border-t-2 border-red-500/40"
+              className="absolute inset-2 rounded-full border-t-2 border-accent-coral/30"
             />
-            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-orange-500/20 to-red-600/20 flex items-center justify-center">
-              <span className="material-icons text-orange-400 text-xl">crisis_alert</span>
+            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-accent-gold/15 to-accent-coral/15 flex items-center justify-center">
+              <ShieldAlert className="w-6 h-6 text-accent-gold" />
             </div>
           </div>
-          <p className="text-xl font-semibold text-white">Loading SOS Dashboard</p>
-          <p className="text-sm text-white/40 mt-2">Preparing your emergency safety system…</p>
+          <p className="text-xl font-semibold text-text-primary">Loading SOS Dashboard</p>
+          <p className="text-sm text-text-tertiary mt-2">Preparing your emergency safety system…</p>
         </motion.div>
       </div>
     );
@@ -896,10 +918,10 @@ export default function Home() {
   };
 
   const getFearLevelColor = (level: number) => {
-    if (level < 30) return 'bg-green-500';
-    if (level < 60) return 'bg-yellow-500';
-    if (level < 80) return 'bg-orange-500';
-    return 'bg-red-500';
+    if (level < 30) return 'bg-accent-emerald';
+    if (level < 60) return 'bg-accent-gold';
+    if (level < 80) return 'bg-accent-gold';
+    return 'bg-accent-coral';
   };
 
   const getFearLevelText = (level: number) => {
@@ -909,634 +931,628 @@ export default function Home() {
     return 'High Alert';
   };
 
+
+  // Auth loading guard — prevent flash of protected content
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center bg-bg-base relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-bg-surface via-bg-surface to-accent-gold/5" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-gold/10 rounded-full blur-3xl animate-orb-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent-coral/10 rounded-full blur-3xl animate-orb-slow-reverse" />
+        <div className="relative z-10 text-center">
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0 rounded-full border-2 border-border-default" />
+            <motion.div animate={{ rotate: -360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-1.5 rounded-full border-[2px] border-accent-gold/20 border-b-accent-gold" />
+            <motion.div animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute inset-3 rounded-full bg-gradient-to-br from-accent-gold to-accent-coral flex items-center justify-center shadow-lg shadow-accent-gold/25">
+              <span className="material-icons text-text-primary text-xl">crisis_alert</span>
+            </motion.div>
+          </div>
+          <h1 className="text-text-primary text-lg font-bold tracking-tight">SOS Emergency</h1>
+          <p className="text-text-tertiary text-sm mt-2">Securing your session…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
+
+
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col min-h-screen text-white font-sans relative overflow-hidden"
-    >
+    <div className="flex flex-col min-h-screen bg-bg-base text-text-primary relative overflow-hidden">
       <Navbar />
 
-      {/* Page body */}
-      <div className="flex-1 pt-20 md:pt-24 pb-10 px-4 md:px-6 lg:px-8 z-10">
+      <div className="flex-1 pt-20 md:pt-24 pb-12 px-4 md:px-6 lg:px-8 z-10">
+        <div className="max-w-7xl mx-auto">
 
-        {/* Status bar */}
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-screen-xl mx-auto flex items-center justify-between mb-6"
-        >
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Emergency Dashboard</h1>
-            <p className="text-xs text-white/40 mt-1">AI-powered safety & rapid response</p>
-          </div>
-          <div className="flex items-center gap-3">
-            {userRole === 'admin' ? (
-              <Link href="/admin">
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-purple-500/20 transition-all">
-                  <span className="material-icons text-sm">admin_panel_settings</span>
-                  Admin
-                </motion.button>
-              </Link>
-            ) : (
-              <Link href="/plans">
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/20 transition-all">
-                  <span className="material-icons text-sm">workspace_premium</span>
-                  Upgrade
-                </motion.button>
-              </Link>
-            )}
-          </div>
-        </motion.div>
-
-        {/* 3-column grid: left=location, center=SOS, right=detection */}
-        <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-[380px_1fr_380px] gap-6 items-start">
-
-          {/* ══ LEFT COLUMN ══ */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-4 order-3 lg:order-1"
-          >
-
-        {/* Location Card — professional */}
-        <div className="w-full bg-gray-900/60 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/20 p-5 hover-lift">
-          {/* Header row */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <span className="material-icons text-emerald-400 text-base">location_on</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-white leading-none">Live Location</p>
-                <p className="text-[11px] text-white/40 mt-0.5">GPS tracking active</p>
-              </div>
-            </div>
-            <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full ${
-              currentLat && currentLon
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                : 'bg-red-500/10 text-red-400 border border-red-500/20'
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                currentLat && currentLon ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'
-              }`} />
-              {currentLat && currentLon ? 'Acquired' : 'No Signal'}
-            </span>
-          </div>
-
-          {/* Coordinates row */}
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] mb-3">
-            <span className="material-icons text-white/30 text-sm">gps_fixed</span>
-            <span className="font-mono text-xs text-white/70 truncate">{locationStatus}</span>
-          </div>
-
-          {/* Map */}
-          {currentLat && currentLon ? (
-            <div className="relative w-full h-52 rounded-xl overflow-hidden border border-white/[0.07]">
-              <iframe
-                width="100%" height="100%"
-                style={{ border: 0, filter: 'brightness(0.92) saturate(0.9)' }}
-                loading="lazy" allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
-                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${currentLat},${currentLon}&zoom=15&maptype=roadmap`}
-              />
-              {/* Subtle coordinate badge bottom-right */}
-              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-mono px-2 py-1 rounded">
-                {currentLat.toFixed(4)}, {currentLon.toFixed(4)}
-              </div>
-            </div>
-          ) : (
-            <div className="w-full h-52 rounded-xl bg-white/[0.02] border border-white/[0.05] flex flex-col items-center justify-center gap-3">
-              <span className="material-icons text-white/20 text-4xl">location_off</span>
-              <div className="text-center">
-                <p className="text-sm text-white/50 font-medium">Location Unavailable</p>
-                <p className="text-xs text-white/30 mt-0.5">Enable GPS to see your position</p>
-              </div>
-              <button
-                onClick={() => window.location.reload()}
-                className="text-xs text-white/50 hover:text-white/80 border border-white/10 hover:border-white/20 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
-          {/* Action buttons */}
-          {currentLat && currentLon && (
-            <div className="flex gap-2 mt-4">
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${currentLat},${currentLon}`}
-                target="_blank" rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] py-2.5 rounded-xl transition-all hover:scale-[1.02]"
-              >
-                <span className="material-icons text-sm">open_in_new</span>
-                Open in Maps
-              </a>
-              <button
-                onClick={() => { navigator.clipboard.writeText(`${currentLat}, ${currentLon}`); showToast('success', 'Coordinates copied'); }}
-                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] py-2.5 rounded-xl transition-all hover:scale-[1.02]"
-              >
-                <span className="material-icons text-sm">content_copy</span>
-                Copy Coords
-              </button>
-            </div>
-          )}
-        </div>
-
-          {/* Emergency type chips */}
-          <div className="grid grid-cols-4 gap-3">
-          {[
-            { icon: 'local_fire_department', label: 'Fire',    accent: 'text-red-400',    bg: 'bg-red-500/10',    border: 'border-red-500/20', hover: 'hover:bg-red-500/20 hover:border-red-500/30'    },
-            { icon: 'medical_services',      label: 'Medical', accent: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', hover: 'hover:bg-emerald-500/20 hover:border-emerald-500/30' },
-            { icon: 'directions_car',        label: 'Accident',accent: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/20', hover: 'hover:bg-blue-500/20 hover:border-blue-500/30'   },
-            { icon: 'support_agent',         label: 'Rescue',  accent: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20', hover: 'hover:bg-orange-500/20 hover:border-orange-500/30' },
-          ].map(({ icon, label, accent, bg, border, hover }) => (
-            <motion.div 
-              key={label} 
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border ${bg} ${border} ${hover} cursor-pointer transition-all duration-200`}
-            >
-              <span className={`material-icons text-xl ${accent}`}>{icon}</span>
-              <span className={`text-[11px] font-medium ${accent}`}>{label}</span>
-            </motion.div>
-          ))}
-          </div>
-          </motion.div>{/* end left column */}
-
-          {/* ══ CENTER COLUMN ══ */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+          {/* ═══════ HEADER ═══════ */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-center gap-5 order-1 lg:order-2 py-8"
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="flex items-center justify-between mb-8"
           >
-            <div className="relative w-56 h-56 sm:w-68 sm:h-68 lg:w-80 lg:h-80">
-              {/* Ripple rings */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="absolute w-full h-full rounded-full border-2 border-red-500/20 animate-ping" style={{ animationDuration: '3s' }} />
-                <div className="absolute w-[120%] h-[120%] rounded-full border border-red-500/10 animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
-                <div className="absolute w-[140%] h-[140%] rounded-full border border-red-500/5 animate-ping" style={{ animationDuration: '3s', animationDelay: '2s' }} />
-              </div>
-              
-              <motion.button
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onTouchStart={handleMouseDown}
-                onTouchEnd={handleMouseUp}
-                whileHover={{ scale: alertSent || canceled ? 1 : 1.03 }}
-                whileTap={{ scale: alertSent || canceled ? 1 : 0.95 }}
-                className={`
-                  relative w-full h-full rounded-full flex items-center justify-center
-                  font-bold text-3xl sm:text-4xl tracking-wider
-                  transition-all duration-300 shadow-2xl
-                  bg-gradient-to-br from-red-500 to-red-700
-                  ${isPressing
-                    ? 'shadow-[0_0_80px_-10px_rgba(239,68,68,0.8)] ring-8 ring-red-500/40'
-                    : 'shadow-[0_0_60px_-10px_rgba(239,68,68,0.5)] ring-4 ring-red-400/30 hover:shadow-[0_0_80px_-5px_rgba(239,68,68,0.7)]'
-                  }
-                  ${alertSent || canceled ? 'opacity-50 cursor-not-allowed grayscale' : ''}
-                `}
-                disabled={alertSent || canceled}
-              >
-                <span className="relative z-10 drop-shadow-lg">SOS</span>
-                
-                {/* Inner glow */}
-                <div className="absolute inset-4 rounded-full bg-gradient-to-br from-red-400/30 to-transparent" />
-                
-                <AnimatePresence>
-                  {isPressing && (
-                    <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1.2, opacity: 0.6 }}
-                      exit={{ scale: 1.5, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="absolute inset-0 rounded-full bg-red-400 blur-md"
-                    />
-                  )}
-                </AnimatePresence>
-              </motion.button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text-primary">
+                Emergency Dashboard
+              </h1>
+              <p className="text-sm text-text-tertiary mt-1">
+                AI-powered safety monitoring &middot; {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+              </p>
             </div>
-
-        <div className="mb-4 flex items-center justify-between w-full max-w-md px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${speechToTextEnabled ? 'bg-orange-500/20' : 'bg-white/5'}`}>
-              <span className={`material-icons text-base transition-colors ${speechToTextEnabled ? 'text-orange-400' : 'text-white/40'}`}>record_voice_over</span>
-            </div>
-            <span className={`text-sm font-medium transition-colors ${speechToTextEnabled ? 'text-orange-300' : 'text-white/60'}`}>AI Voice Detection</span>
-          </div>
-          <label htmlFor="ai-voice-toggle" className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="ai-voice-toggle" className="sr-only peer" checked={speechToTextEnabled} onChange={toggleSpeechRecognition} />
-            <div className="w-11 h-6 bg-white/10 peer-checked:bg-orange-500 rounded-full transition-all peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-md"></div>
-          </label>
-        </div>
-
-        <motion.div
-          key={message}
-          initial={{ opacity: 0, y: -10, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          className={`w-full max-w-sm text-center text-sm font-medium px-5 py-3 rounded-2xl border backdrop-blur-sm shadow-lg
-            ${messageType === "success" ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10" : ""}
-            ${messageType === "error" ? "bg-red-500/15 text-red-400 border-red-500/30 shadow-red-500/10" : ""}
-            ${messageType === "info" ? "bg-blue-500/15 text-blue-400 border-blue-500/30 shadow-blue-500/10" : ""}
-            ${messageType === "warning" ? "bg-orange-500/15 text-orange-400 border-orange-500/30 shadow-orange-500/10" : ""}
-          `}
-        >
-          {message}
-        </motion.div>
-
-        <AnimatePresence>
-          {showAlertTimer && !canceled && !alertSent && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              className="w-full max-w-xs p-5 bg-gradient-to-br from-amber-500/20 to-red-500/10 border border-amber-500/30 text-amber-400 rounded-2xl text-center shadow-2xl shadow-amber-500/10"
-            >
-              <div className="relative inline-flex items-center justify-center mb-2">
-                <svg className="w-14 h-14 transform -rotate-90">
-                  <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="3" fill="none" className="text-white/10" />
-                  <circle 
-                    cx="28" 
-                    cy="28" 
-                    r="24" 
-                    stroke="currentColor" 
-                    strokeWidth="3" 
-                    fill="none" 
-                    className="text-amber-400"
-                    strokeDasharray={`${2 * Math.PI * 24}`}
-                    strokeDashoffset={`${2 * Math.PI * 24 * (1 - timerSeconds / 3)}`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="absolute text-2xl font-bold">{timerSeconds}</span>
-              </div>
-              <p className="text-xs text-amber-400/70 mb-4">SOS alert sending shortly…</p>
-              <button
-                onClick={handleCancelAlert}
-                className="text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2 rounded-xl transition-all hover:scale-105"
-              >
-                Cancel Alert
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <p className="text-xs text-white/30 text-center max-w-[220px]">
-          Press and hold 3 seconds to send emergency SOS
-        </p>
-          </motion.div>{/* end center column */}
-
-          {/* ══ RIGHT COLUMN ══ */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="order-2 lg:order-3"
-          >
-            <div className="bg-gray-900/60 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/20 p-5 hover-lift">
-          {/* Card header */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                <span className="material-icons text-orange-400 text-base">sensors</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-white leading-none">Fear Detection</p>
-                <p className="text-[11px] text-white/40 mt-0.5">Real-time audio analysis</p>
-              </div>
-            </div>
-            {isSOSTriggered ? (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-red-500/15 text-red-400 border border-red-500/25 animate-pulse">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                SOS Active
-              </span>
-            ) : (
-              <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full border ${
-                isListening
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                  : 'bg-white/5 text-white/40 border-white/10'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  isListening ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
-                }`} />
-                {isListening ? 'Listening' : 'Idle'}
-              </span>
-            )}
-          </div>
-
-          {/* Fear level bar */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-xs text-white/50">Threat Level</span>
-              <span className={`text-xs font-semibold ${
-                fearLevel > 70 ? 'text-red-400' : fearLevel > 40 ? 'text-amber-400' : 'text-emerald-400'
-              }`}>
-                {fearLevel}% — {getFearLevelText(fearLevel)}
-              </span>
-            </div>
-            <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-              <motion.div
-                className={`h-full rounded-full transition-colors duration-300 ${
-                  fearLevel > 70 ? 'bg-red-500' : fearLevel > 40 ? 'bg-amber-500' : 'bg-emerald-500'
-                }`}
-                animate={{ width: `${Math.min(fearLevel, 100)}%` }}
-                transition={{ duration: 0.3 }}
-              />
-            </div>
-          </div>
-
-          {/* Mic Status + Audio waveform */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-1.5">
-              <div className="flex items-center gap-2">
-                {/* mic icon */}
-                <svg className={`w-3.5 h-3.5 ${isListening ? 'text-emerald-400' : 'text-white/30'}`} fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V20H9v2h6v-2h-2v-2.07A7 7 0 0 0 19 11h-2z"/>
-                </svg>
-                <span className="text-xs text-white/50">Microphone</span>
-                {isListening ? (
-                  <span className="flex items-center gap-1">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wide">Live</span>
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-white/25 uppercase tracking-wide">Off</span>
-                )}
-              </div>
-              <span className="text-xs text-white/40 font-mono">{isListening ? `${Math.round(currentVolume)}% vol` : '—'}</span>
-            </div>
-            <div className={`flex items-end justify-between h-12 px-1.5 py-1 rounded-lg border overflow-hidden transition-colors duration-300 ${
-              isListening
-                ? currentVolume > 5
-                  ? 'bg-emerald-950/30 border-emerald-500/20'
-                  : 'bg-white/[0.02] border-white/[0.06]'
-                : 'bg-white/[0.01] border-white/[0.03]'
-            }`}>
-              {audioLevels.map((level, index) => (
-                <div
-                  key={index}
-                  className={`rounded-sm transition-all duration-75 ${
-                    !isListening ? 'bg-white/10' :
-                    level > 70 ? 'bg-red-400/90' :
-                    level > 40 ? 'bg-amber-400/90' :
-                    level > 8  ? 'bg-emerald-400/90' : 'bg-white/15'
-                  }`}
-                  style={{
-                    height: isListening ? `${Math.max(4, (level / 100) * 44)}px` : '4px',
-                    width: '4%',
-                    transition: 'height 80ms ease, background-color 200ms ease',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Live mic diagnostics — visible when listening */}
-          {isListening && (
-            <div className="mb-3 px-2 py-1.5 rounded-lg bg-black/30 border border-white/[0.06] font-mono text-[10px] text-white/50 flex flex-wrap gap-x-3 gap-y-0.5">
-              <span>ctx:<span className={debugInfo.ctxState === 'running' ? 'text-emerald-400' : 'text-red-400'}> {debugInfo.ctxState ?? '…'}</span></span>
-              <span>track:<span className={debugInfo.trackEnabled ? 'text-emerald-400' : 'text-red-400'}> {debugInfo.trackState ?? '…'}</span></span>
-              <span>muted:<span className={debugInfo.trackMuted ? 'text-red-400' : 'text-emerald-400'}> {String(debugInfo.trackMuted ?? '…')}</span></span>
-              <span>rms: <span className="text-white/80">{debugInfo.rawRms ?? '…'}</span></span>
-              <span>s[0]: <span className="text-white/80">{debugInfo.sample0 ?? '…'}</span></span>
-              <span>vol: <span className="text-white/80">{debugInfo.vol ?? '…'}</span></span>
-              {debugInfo.trackMuted && (
-                <span className="w-full text-red-400 font-semibold">⚠ Mic muted by browser/OS — check system mic settings</span>
+            <div className="flex items-center gap-3">
+              {userRole === 'admin' ? (
+                <Link href="/admin">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="btn-secondary text-sm"
+                  >
+                    <Users className="w-4 h-4" />
+                    Admin
+                  </motion.button>
+                </Link>
+              ) : (
+                <Link href="/plans">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="btn-secondary text-sm"
+                  >
+                    <Crown className="w-4 h-4" />
+                    Upgrade
+                  </motion.button>
+                </Link>
               )}
             </div>
-          )}
+          </motion.div>
 
-          {/* Stats grid */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {[
-              { label: 'Emotion', value: lastEmotion || '—', highlight: lastEmotion === 'fear' },
-              { label: 'Keyword', value: lastDetectedKeyword || '—', highlight: !!lastDetectedKeyword },
-              { label: 'Streak', value: `${consecutiveFearCount}/${SOS_FEAR_THRESHOLD}`, highlight: consecutiveFearCount >= SOS_FEAR_THRESHOLD },
-            ].map(({ label, value, highlight }) => (
-              <div key={label} className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
-                <p className="text-[10px] text-white/40 mb-0.5">{label}</p>
-                <p className={`text-xs font-semibold truncate capitalize ${
-                  highlight ? 'text-red-400' : 'text-white/80'
-                }`}>{value}</p>
-              </div>
-            ))}
-          </div>
+          {/* ═══════ MAIN GRID ═══════ */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-          {/* Active keywords */}
-          <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] text-white/50 font-medium uppercase tracking-wide">Trigger Keywords</span>
-              <span className="text-[11px] text-white/30">{keywords.length} active</span>
-            </div>
-            <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
-              {keywords.length === 0 ? (
-                <p className="text-xs text-white/25 italic">No keywords configured</p>
-              ) : keywords.map((keyword, index) => (
-                <span
-                  key={index}
-                  className={`px-2 py-0.5 text-[11px] rounded font-medium transition-all duration-200 ${
-                    lastDetectedKeyword === keyword
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                      : 'bg-white/[0.04] text-white/40 border border-white/[0.06]'
-                  }`}
-                >
-                  {keyword}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Control buttons */}
-          <div className="flex gap-2 mt-5">
-            {!isListening ? (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={startListening}
-                disabled={speechToTextEnabled}
-                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-lg shadow-orange-500/20 py-3 rounded-xl transition-all disabled:opacity-40"
-              >
-                <span className="material-icons text-sm">mic</span>
-                Start Monitoring
-              </motion.button>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={stopListening}
-                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-lg shadow-red-500/20 py-3 rounded-xl transition-all"
-              >
-                <span className="material-icons text-sm">stop</span>
-                Stop Monitoring
-              </motion.button>
-            )}
-            {(isSOSTriggered || isListening) && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={resetSOS}
-                className="flex items-center justify-center gap-1.5 text-xs font-medium text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] px-4 py-3 rounded-xl transition-all"
-              >
-                <span className="material-icons text-sm">refresh</span>
-                Reset
-              </motion.button>
-            )}
-          </div>
-
-          <button
-            onClick={testAPI}
-            className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-white/40 hover:text-white/70 border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.02] py-2.5 rounded-xl transition-all"
-          >
-            <span className="material-icons text-sm">science</span>
-            Test API Connection
-          </button>
-
-          <p className="mt-4 text-[10px] text-white/25 text-center leading-relaxed">
-            Analyzes 5-second chunks · SOS after {SOS_FEAR_THRESHOLD} consecutive fear detections
-          </p>
-            </div>{/* end fear detection card */}
-          </motion.div>{/* end right column */}
-        </div>{/* end grid */}
-
-        {/* ── Safety Tips ─────────────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-10"
-        >
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-white/40 mb-4 flex items-center gap-2">
-            <span className="material-icons text-base text-orange-500">tips_and_updates</span>
-            Safety Tips
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: 'share_location', color: 'from-blue-600/20 to-blue-800/20 border-blue-500/20', hover: 'hover:border-blue-500/40', title: 'Share Your Route', tip: 'Always let someone know your planned route before travelling alone at night.' },
-              { icon: 'contacts', color: 'from-green-600/20 to-green-800/20 border-green-500/20', hover: 'hover:border-green-500/40', title: 'Keep Contacts Updated', tip: 'Make sure your emergency contacts have the correct phone numbers in Settings.' },
-              { icon: 'battery_charging_full', color: 'from-yellow-600/20 to-yellow-800/20 border-yellow-500/20', hover: 'hover:border-yellow-500/40', title: 'Keep Phone Charged', tip: 'Maintain at least 20% battery when going out. A dead phone can\u2019t call for help.' },
-              { icon: 'record_voice_over', color: 'from-red-600/20 to-red-800/20 border-red-500/20', hover: 'hover:border-red-500/40', title: 'Use Voice Keywords', tip: 'Enable keyword monitoring and say a trigger word to silently send an SOS alert.' },
-            ].map(({ icon, color, hover, title, tip }) => (
-              <motion.div 
-                key={title}
-                whileHover={{ y: -4, scale: 1.01 }}
-                className={`rounded-2xl border bg-gradient-to-br ${color} ${hover} p-5 flex flex-col gap-3 transition-all duration-300 cursor-default`}
-              >
-                <span className="material-icons text-2xl text-white/70">{icon}</span>
-                <p className="text-sm font-semibold text-white/90">{title}</p>
-                <p className="text-xs text-white/50 leading-relaxed">{tip}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ── Quick Stats ──────────────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-8 grid grid-cols-3 gap-4"
-        >
-          {[
-            { icon: 'contacts', label: 'Emergency Contacts', value: contacts.length, suffix: 'saved', color: 'text-green-400', bg: 'from-green-500/10 to-green-600/5 border-green-500/20' },
-            { icon: 'record_voice_over', label: 'Trigger Keywords', value: keywords.length, suffix: 'active', color: 'text-blue-400', bg: 'from-blue-500/10 to-blue-600/5 border-blue-500/20' },
-            { icon: 'security', label: 'Monitoring', value: isListening ? 'ON' : 'OFF', suffix: '', color: isListening ? 'text-orange-400' : 'text-white/40', bg: isListening ? 'from-orange-500/10 to-orange-600/5 border-orange-500/20' : 'from-white/5 to-white/[0.02] border-white/10' },
-          ].map(({ icon, label, value, suffix, color, bg }) => (
-            <motion.div 
-              key={label}
-              whileHover={{ y: -3 }}
-              className={`rounded-2xl border bg-gradient-to-br ${bg} p-5 text-center transition-all duration-300`}
+            {/* ── LEFT COLUMN (Location + Emergency Types) ── */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:col-span-4 space-y-5 order-3 lg:order-1"
             >
-              <span className={`material-icons text-2xl mb-2 ${color}`}>{icon}</span>
-              <p className={`text-3xl font-bold ${color}`}>{value}</p>
-              <p className="text-xs text-white/40 leading-tight mt-1">{label}</p>
-              {suffix && <p className="text-[11px] text-white/25 mt-0.5">{suffix}</p>}
-            </motion.div>
-          ))}
-        </motion.div>
+              {/* Location Card */}
+              <div className="card p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-accent-emerald/10 border border-accent-emerald/15 flex items-center justify-center">
+                      <MapPin className="w-4.5 h-4.5 text-accent-emerald" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-text-primary">Live Location</p>
+                      <p className="text-xs text-text-tertiary">GPS tracking active</p>
+                    </div>
+                  </div>
+                  <span className={`badge ${currentLat && currentLon ? 'badge-green' : 'badge-coral'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${currentLat && currentLon ? 'bg-accent-emerald animate-pulse' : 'bg-accent-coral'}`} />
+                    {currentLat && currentLon ? 'Acquired' : 'No Signal'}
+                  </span>
+                </div>
 
-        {/* ── Emergency Contacts strip ─────────────────────────────────── */}
-        {contacts.length > 0 && (
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-bg-elevated border border-border-subtle mb-4">
+                  <Crosshair className="w-4 h-4 text-text-muted" />
+                  <span className="font-mono text-xs text-text-secondary truncate">{locationStatus}</span>
+                </div>
+
+                {currentLat && currentLon ? (
+                  <div className="relative w-full h-52 rounded-xl overflow-hidden border border-border-subtle">
+                    <iframe
+                      width="100%" height="100%"
+                      style={{ border: 0, filter: 'brightness(0.9) saturate(0.85)' }}
+                      loading="lazy" allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${currentLat},${currentLon}&zoom=15&maptype=roadmap`}
+                    />
+                    <div className="absolute bottom-3 right-3 bg-bg-base/80 backdrop-blur-md text-text-secondary text-[11px] font-mono px-2.5 py-1 rounded-lg border border-border-default">
+                      {currentLat.toFixed(4)}, {currentLon.toFixed(4)}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-52 rounded-xl bg-bg-elevated border border-border-subtle flex flex-col items-center justify-center gap-3">
+                    <MapPinOff className="w-8 h-8 text-text-muted" />
+                    <div className="text-center">
+                      <p className="text-sm text-text-secondary font-medium">Location Unavailable</p>
+                      <p className="text-xs text-text-muted mt-1">Enable GPS to see your position</p>
+                    </div>
+                    <button onClick={() => window.location.reload()}
+                      className="text-xs text-text-tertiary hover:text-text-primary border border-border-default hover:border-border-hover px-4 py-2 rounded-xl transition-colors">
+                      Retry
+                    </button>
+                  </div>
+                )}
+
+                {currentLat && currentLon && (
+                  <div className="flex gap-2.5 mt-4">
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${currentLat},${currentLon}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-elevated hover:bg-bg-hover border border-border-subtle hover:border-border-default py-2.5 rounded-xl transition-all">
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Open in Maps
+                    </a>
+                    <button onClick={() => { navigator.clipboard.writeText(`${currentLat}, ${currentLon}`); showToast('success', 'Coordinates copied'); }}
+                      className="flex-1 flex items-center justify-center gap-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-elevated hover:bg-bg-hover border border-border-subtle hover:border-border-default py-2.5 rounded-xl transition-all">
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Emergency Type Chips */}
+              <div className="grid grid-cols-4 gap-2.5">
+                {[
+                  { icon: Flame, label: 'Fire', accent: 'text-accent-coral', bg: 'bg-accent-coral/10', border: 'border-accent-coral/15' },
+                  { icon: Heart, label: 'Medical', accent: 'text-accent-emerald', bg: 'bg-accent-emerald/10', border: 'border-accent-emerald/15' },
+                  { icon: Car, label: 'Accident', accent: 'text-accent-blue', bg: 'bg-accent-blue/10', border: 'border-accent-blue/15' },
+                  { icon: LifeBuoy, label: 'Rescue', accent: 'text-accent-gold', bg: 'bg-accent-gold/10', border: 'border-accent-gold/15' },
+                ].map(({ icon: Icon, label, accent, bg, border }) => (
+                  <motion.div
+                    key={label}
+                    whileHover={{ scale: 1.04, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`flex flex-col items-center gap-2 py-3.5 rounded-xl border ${bg} ${border} cursor-pointer transition-all duration-200`}
+                  >
+                    <Icon className={`w-5 h-5 ${accent}`} />
+                    <span className={`text-xs font-medium ${accent}`}>{label}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* ── CENTER COLUMN (SOS + Controls) ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:col-span-4 flex flex-col items-center gap-6 order-1 lg:order-2 py-4"
+            >
+              {/* SOS Button */}
+              <div className="relative w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72">
+                {/* Ripple rings */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="absolute w-full h-full rounded-full border-2 border-accent-coral/10 animate-pulse" style={{ animationDuration: '4s' }} />
+                  <div className="absolute w-[115%] h-[115%] rounded-full border border-accent-coral/5 animate-pulse" style={{ animationDuration: '4s', animationDelay: '1.3s' }} />
+                  <div className="absolute w-[130%] h-[130%] rounded-full border border-accent-coral/5 animate-pulse" style={{ animationDuration: '4s', animationDelay: '2.6s' }} />
+                </div>
+
+                <motion.button
+                  onMouseDown={handleMouseDown}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onTouchStart={handleMouseDown}
+                  onTouchEnd={handleMouseUp}
+                  whileHover={{ scale: alertSent || canceled ? 1 : 1.03 }}
+                  whileTap={{ scale: alertSent || canceled ? 1 : 0.95 }}
+                  className={`relative w-full h-full rounded-full flex items-center justify-center font-bold text-4xl sm:text-5xl tracking-wider transition-all duration-500
+                    bg-gradient-to-br from-accent-coral via-accent-coral to-accent-coral/80
+                    ${isPressing
+                      ? 'shadow-[0_0_100px_-10px_rgba(232,108,92,0.6)] ring-[12px] ring-accent-coral/20'
+                      : 'shadow-[0_0_60px_-10px_rgba(232,108,92,0.35)] ring-[6px] ring-accent-coral/10 hover:shadow-[0_0_80px_-5px_rgba(232,108,92,0.5)]'
+                    }
+                    ${alertSent || canceled ? 'opacity-40 cursor-not-allowed grayscale' : ''}
+                  `}
+                  disabled={alertSent || canceled}
+                >
+                  <span className="relative z-10 drop-shadow-lg">SOS</span>
+                  <div className="absolute inset-6 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
+                  <AnimatePresence>
+                    {isPressing && (
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1.4, opacity: 0.4 }}
+                        exit={{ scale: 1.7, opacity: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="absolute inset-0 rounded-full bg-accent-coral blur-xl"
+                      />
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              </div>
+
+              {/* AI Voice Toggle */}
+              <div className="w-full max-w-sm flex items-center justify-between px-5 py-3.5 rounded-2xl card">
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${speechToTextEnabled ? 'bg-accent-gold/15' : 'bg-bg-elevated'}`}>
+                    <Mic className={`w-4.5 h-4.5 transition-colors ${speechToTextEnabled ? 'text-accent-gold' : 'text-text-muted'}`} />
+                  </div>
+                  <span className={`text-sm font-medium transition-colors ${speechToTextEnabled ? 'text-accent-gold-light' : 'text-text-secondary'}`}>
+                    AI Voice Detection
+                  </span>
+                </div>
+                <label htmlFor="ai-voice-toggle" className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="ai-voice-toggle" className="sr-only peer" checked={speechToTextEnabled} onChange={toggleSpeechRecognition} />
+                  <div className="w-12 h-7 bg-bg-elevated peer-checked:bg-accent-gold rounded-full transition-all peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-text-primary after:rounded-full after:h-[22px] after:w-[22px] after:transition-all after:shadow-md"></div>
+                </label>
+              </div>
+
+              {/* Message bar */}
+              <motion.div
+                key={message}
+                initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className={`w-full max-w-sm text-center text-sm font-medium px-5 py-3 rounded-2xl border backdrop-blur-sm
+                  ${messageType === "success" ? "bg-accent-emerald/8 text-accent-emerald border-accent-emerald/20" : ""}
+                  ${messageType === "error" ? "bg-accent-coral/8 text-accent-coral border-accent-coral/20" : ""}
+                  ${messageType === "info" ? "bg-accent-blue/8 text-accent-blue border-accent-blue/20" : ""}
+                  ${messageType === "warning" ? "bg-accent-gold/8 text-accent-gold border-accent-gold/20" : ""}
+                `}
+              >
+                {message}
+              </motion.div>
+
+              {/* Alert Timer */}
+              <AnimatePresence>
+                {showAlertTimer && !canceled && !alertSent && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                    className="w-full max-w-xs p-6 bg-gradient-to-br from-accent-gold/10 to-accent-coral/5 border border-accent-gold/20 text-accent-gold rounded-2xl text-center shadow-xl"
+                  >
+                    <div className="relative inline-flex items-center justify-center mb-3">
+                      <svg className="w-16 h-16 transform -rotate-90">
+                        <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="2.5" fill="none" className="text-border-default" />
+                        <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="2.5" fill="none" className="text-accent-gold"
+                          strokeDasharray={`${2 * Math.PI * 28}`}
+                          strokeDashoffset={`${2 * Math.PI * 28 * (1 - timerSeconds / 3)}`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <span className="absolute text-3xl font-bold">{timerSeconds}</span>
+                    </div>
+                    <p className="text-xs text-text-tertiary mb-5">SOS alert sending shortly…</p>
+                    <button onClick={handleCancelAlert}
+                      className="text-xs font-semibold text-text-primary bg-bg-hover hover:bg-bg-pressed border border-border-default px-6 py-2.5 rounded-xl transition-all hover:scale-105">
+                      Cancel Alert
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <p className="text-xs text-text-muted text-center max-w-[260px] leading-relaxed">
+                Press and hold for 3 seconds to send emergency SOS
+              </p>
+            </motion.div>
+
+            {/* ── RIGHT COLUMN (Fear Detection) ── */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:col-span-4 order-2 lg:order-3"
+            >
+              <div className="card p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-accent-gold/10 border border-accent-gold/15 flex items-center justify-center">
+                      <Activity className="w-4.5 h-4.5 text-accent-gold" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-text-primary">Fear Detection</p>
+                      <p className="text-xs text-text-tertiary">Real-time audio analysis</p>
+                    </div>
+                  </div>
+                  {isSOSTriggered ? (
+                    <span className="badge badge-coral animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent-coral" />
+                      SOS Active
+                    </span>
+                  ) : (
+                    <span className={`badge ${isListening ? 'badge-green' : 'badge-gold'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${isListening ? 'bg-accent-emerald animate-pulse' : 'bg-text-muted'}`} />
+                      {isListening ? 'Listening' : 'Idle'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Threat Level Bar */}
+                <div className="mb-5">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-text-tertiary">Threat Level</span>
+                    <span className={`text-xs font-semibold ${
+                      fearLevel > 70 ? 'text-accent-coral' : fearLevel > 40 ? 'text-accent-gold' : 'text-accent-emerald'
+                    }`}>
+                      {fearLevel}% — {getFearLevelText(fearLevel)}
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-bg-elevated overflow-hidden">
+                    <motion.div
+                      className={`h-full rounded-full ${
+                        fearLevel > 70 ? 'bg-accent-coral' : fearLevel > 40 ? 'bg-accent-gold' : 'bg-accent-emerald'
+                      }`}
+                      animate={{ width: `${Math.min(fearLevel, 100)}%` }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
+                </div>
+
+                {/* Audio Waveform */}
+                <div className="mb-5">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center gap-2">
+                      <Mic className={`w-3.5 h-3.5 ${isListening ? 'text-accent-emerald' : 'text-text-muted'}`} />
+                      <span className="text-xs text-text-tertiary">Microphone</span>
+                      {isListening ? (
+                        <span className="flex items-center gap-1">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-emerald opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-emerald" />
+                          </span>
+                          <span className="text-[11px] font-semibold text-accent-emerald uppercase tracking-wide">Live</span>
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-text-muted uppercase tracking-wide">Off</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-text-muted font-mono">{isListening ? `${Math.round(currentVolume)}% vol` : '—'}</span>
+                  </div>
+                  <div className={`flex items-end justify-between h-14 px-2 py-1.5 rounded-xl border overflow-hidden transition-colors duration-300 ${
+                    isListening
+                      ? currentVolume > 5 ? 'bg-accent-emerald/5 border-accent-emerald/10' : 'bg-bg-elevated border-border-subtle'
+                      : 'bg-bg-surface border-border-subtle/50'
+                  }`}>
+                    {audioLevels.map((level, index) => (
+                      <div
+                        key={index}
+                        className={`rounded-sm transition-all duration-75 ${
+                          !isListening ? 'bg-text-muted/20' :
+                          level > 70 ? 'bg-accent-coral/80' :
+                          level > 40 ? 'bg-accent-gold/80' :
+                          level > 8 ? 'bg-accent-emerald/80' : 'bg-text-muted/30'
+                        }`}
+                        style={{
+                          height: isListening ? `${Math.max(4, (level / 100) * 48)}px` : '4px',
+                          width: '4%',
+                          transition: 'height 80ms ease, background-color 200ms ease',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Debug info */}
+                {isListening && (
+                  <div className="mb-4 px-3 py-2 rounded-xl bg-bg-elevated border border-border-subtle font-mono text-[11px] text-text-muted flex flex-wrap gap-x-3 gap-y-1">
+                    <span>ctx:<span className={debugInfo.ctxState === 'running' ? 'text-accent-emerald' : 'text-accent-coral'}> {debugInfo.ctxState ?? '…'}</span></span>
+                    <span>track:<span className={debugInfo.trackEnabled ? 'text-accent-emerald' : 'text-accent-coral'}> {debugInfo.trackState ?? '…'}</span></span>
+                    <span>muted:<span className={debugInfo.trackMuted ? 'text-accent-coral' : 'text-accent-emerald'}> {String(debugInfo.trackMuted ?? '…')}</span></span>
+                    <span>vol: <span className="text-text-secondary">{debugInfo.vol ?? '…'}</span></span>
+                    {debugInfo.trackMuted && (
+                      <span className="w-full text-accent-coral font-semibold">⚠ Mic muted by browser/OS — check system mic settings</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-3 gap-2.5 mb-5">
+                  {[
+                    { label: 'Emotion', value: lastEmotion || '—', highlight: lastEmotion === 'fear' },
+                    { label: 'Keyword', value: lastDetectedKeyword || '—', highlight: !!lastDetectedKeyword },
+                    { label: 'Streak', value: `${consecutiveFearCount}/${SOS_FEAR_THRESHOLD}`, highlight: consecutiveFearCount >= SOS_FEAR_THRESHOLD },
+                  ].map(({ label, value, highlight }) => (
+                    <div key={label} className="rounded-xl bg-bg-elevated border border-border-subtle px-3 py-2.5">
+                      <p className="text-[11px] text-text-muted mb-1">{label}</p>
+                      <p className={`text-xs font-semibold truncate capitalize ${highlight ? 'text-accent-coral' : 'text-text-secondary'}`}>{value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Keywords */}
+                <div className="rounded-xl bg-bg-elevated border border-border-subtle p-3.5 mb-5">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-xs text-text-tertiary font-medium uppercase tracking-wide">Trigger Keywords</span>
+                    <span className="text-xs text-text-muted">{keywords.length} active</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto scrollbar-none">
+                    {keywords.length === 0 ? (
+                      <p className="text-xs text-text-muted italic">No keywords configured</p>
+                    ) : keywords.map((keyword, index) => (
+                      <span key={index}
+                        className={`px-2.5 py-1 text-[11px] rounded-md font-medium transition-all duration-200 ${
+                          lastDetectedKeyword === keyword
+                            ? 'bg-accent-coral/10 text-accent-coral border border-accent-coral/15'
+                            : 'bg-bg-hover text-text-tertiary border border-border-subtle'
+                        }`}
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Control buttons */}
+                <div className="flex gap-2.5">
+                  {!isListening ? (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={startListening}
+                      disabled={speechToTextEnabled}
+                      className="flex-1 flex items-center justify-center gap-2 text-xs font-semibold text-bg-base bg-gradient-to-r from-accent-gold to-accent-gold-light shadow-glow-gold py-3 rounded-xl transition-all disabled:opacity-40"
+                    >
+                      <Mic className="w-4 h-4" />
+                      Start Monitoring
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={stopListening}
+                      className="flex-1 flex items-center justify-center gap-2 text-xs font-semibold text-text-primary bg-gradient-to-r from-accent-coral to-accent-coral/80 shadow-glow-coral py-3 rounded-xl transition-all"
+                    >
+                      <Square className="w-4 h-4" />
+                      Stop Monitoring
+                    </motion.button>
+                  )}
+                  {(isSOSTriggered || isListening) && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={resetSOS}
+                      className="flex items-center justify-center gap-2 text-xs font-medium text-text-tertiary hover:text-text-primary bg-bg-hover hover:bg-bg-elevated border border-border-subtle px-4 py-3 rounded-xl transition-all"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Reset
+                    </motion.button>
+                  )}
+                </div>
+
+                <button onClick={testAPI}
+                  className="mt-3 w-full flex items-center justify-center gap-2 text-xs font-medium text-text-muted hover:text-text-tertiary border border-border-subtle hover:border-border-default hover:bg-bg-hover py-2.5 rounded-xl transition-all">
+                  <FlaskConical className="w-3.5 h-3.5" />
+                  Test API Connection
+                </button>
+
+                <p className="mt-4 text-[11px] text-text-muted/60 text-center leading-relaxed">
+                  Analyzes 5-second chunks · SOS after {SOS_FEAR_THRESHOLD} consecutive fear detections
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* ═══════ SAFETY TIPS ═══════ */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8"
+            transition={{ delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-14"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-white/40 flex items-center gap-2">
-                <span className="material-icons text-base text-green-500">people</span>
-                Emergency Contacts
-              </h2>
-              <Link href="/settings" className="text-xs text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-1 font-medium">
-                Manage <span className="material-icons text-sm">chevron_right</span>
-              </Link>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border-default to-transparent" />
+              <span className="section-label">Safety Tips</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border-default to-transparent" />
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
-              {contacts.slice(0, 5).map((c, i) => (
-                <motion.div 
-                  key={i}
-                  whileHover={{ scale: 1.02 }}
-                  className="flex-shrink-0 flex items-center gap-3 bg-white/[0.04] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl px-4 py-3 min-w-[180px] transition-colors"
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: Share2, color: 'from-accent-blue/10 to-accent-blue/5 border-accent-blue/10', hover: 'hover:border-accent-blue/25', title: 'Share Your Route', tip: 'Always let someone know your planned route before travelling alone at night.' },
+                { icon: Contact2, color: 'from-accent-emerald/10 to-accent-emerald/5 border-accent-emerald/10', hover: 'hover:border-accent-emerald/25', title: 'Keep Contacts Updated', tip: 'Make sure your emergency contacts have the correct phone numbers in Settings.' },
+                { icon: Battery, color: 'from-accent-gold/10 to-accent-gold/5 border-accent-gold/10', hover: 'hover:border-accent-gold/25', title: 'Keep Phone Charged', tip: 'Maintain at least 20% battery when going out. A dead phone can\u2019t call for help.' },
+                { icon: Mic, color: 'from-accent-coral/10 to-accent-coral/5 border-accent-coral/10', hover: 'hover:border-accent-coral/25', title: 'Use Voice Keywords', tip: 'Enable keyword monitoring and say a trigger word to silently send an SOS alert.' },
+              ].map(({ icon: Icon, color, hover, title, tip }) => (
+                <motion.div
+                  key={title}
+                  whileHover={{ y: -4 }}
+                  className={`rounded-2xl border bg-gradient-to-br ${color} ${hover} p-6 flex flex-col gap-3 transition-all duration-300 cursor-default`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg shadow-green-500/20">
-                    {c.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="overflow-hidden">
-                    <p className="text-sm font-semibold text-white/90 truncate">{c.name}</p>
-                    <p className="text-[11px] text-white/40 truncate">{c.relationship || c.phone}</p>
-                  </div>
+                  <Icon className="w-6 h-6 text-text-secondary" />
+                  <p className="text-sm font-semibold text-text-primary">{title}</p>
+                  <p className="text-xs text-text-tertiary leading-relaxed">{tip}</p>
                 </motion.div>
               ))}
             </div>
           </motion.div>
-        )}
 
-        {/* ── Footer strip ─────────────────────────────────────────────── */}
-        <div className="mt-12 mb-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs text-white/30">
-          <Link href="/support" className="hover:text-white/60 transition-colors flex items-center gap-1.5">
-            <span className="material-icons text-sm">support_agent</span>Help & Support
-          </Link>
-          <span className="hidden sm:inline text-white/10">·</span>
-          <Link href="/privacy-policy" className="hover:text-white/60 transition-colors flex items-center gap-1.5">
-            <span className="material-icons text-sm">verified_user</span>Privacy Policy
-          </Link>
-          <span className="hidden sm:inline text-white/10">·</span>
-          <Link href="/blogs" className="hover:text-white/60 transition-colors flex items-center gap-1.5">
-            <span className="material-icons text-sm">article</span>Safety Blogs
-          </Link>
-          <span className="hidden sm:inline text-white/10">·</span>
-          <span className="text-white/20">SOS Emergency © 2025</span>
+          {/* ═══════ QUICK STATS ═══════ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-10 grid grid-cols-3 gap-4"
+          >
+            {[
+              { icon: Contact2, label: 'Emergency Contacts', value: contacts.length, suffix: 'saved', color: 'text-accent-emerald', bg: 'from-accent-emerald/8 to-accent-emerald/4 border-accent-emerald/10' },
+              { icon: Mic, label: 'Trigger Keywords', value: keywords.length, suffix: 'active', color: 'text-accent-blue', bg: 'from-accent-blue/8 to-accent-blue/4 border-accent-blue/10' },
+              { icon: Activity, label: 'Monitoring', value: isListening ? 'ON' : 'OFF', suffix: '', color: isListening ? 'text-accent-gold' : 'text-text-muted', bg: isListening ? 'from-accent-gold/8 to-accent-gold/4 border-accent-gold/10' : 'from-white/[0.03] to-white/[0.01] border-border-subtle' },
+            ].map(({ icon: Icon, label, value, suffix, color, bg }) => (
+              <motion.div
+                key={label}
+                whileHover={{ y: -3 }}
+                className={`rounded-2xl border bg-gradient-to-br ${bg} p-6 text-center transition-all duration-300`}
+              >
+                <Icon className={`w-6 h-6 mx-auto mb-3 ${color}`} />
+                <p className={`text-3xl font-bold ${color}`}>{value}</p>
+                <p className="text-xs text-text-tertiary leading-tight mt-2">{label}</p>
+                {suffix && <p className="text-xs text-text-muted mt-1">{suffix}</p>}
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* ═══════ EMERGENCY CONTACTS STRIP ═══════ */}
+          {contacts.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-10"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="h-px w-8 bg-gradient-to-r from-accent-emerald to-transparent" />
+                  <span className="section-label">Emergency Contacts</span>
+                </div>
+                <Link href="/settings" className="text-xs text-accent-gold hover:text-accent-gold-light transition-colors flex items-center gap-1 font-medium">
+                  Manage <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+                {contacts.slice(0, 5).map((c, i) => (
+                  <motion.div
+                    key={i}
+                    whileHover={{ scale: 1.02 }}
+                    className="flex-shrink-0 flex items-center gap-3 bg-bg-elevated hover:bg-bg-hover border border-border-default rounded-xl px-4 py-3 min-w-[190px] transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-emerald/80 to-accent-emerald flex items-center justify-center text-sm font-bold text-text-primary shrink-0 shadow-lg shadow-accent-emerald/10">
+                      {c.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-semibold text-text-primary truncate">{c.name}</p>
+                      <p className="text-xs text-text-tertiary truncate">{c.relationship || c.phone}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══════ FOOTER STRIP ═══════ */}
+          <div className="mt-16 mb-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs text-text-muted">
+            <Link href="/support" className="hover:text-text-tertiary transition-colors flex items-center gap-1.5">
+              <HelpCircle className="w-3.5 h-3.5" />
+              Help & Support
+            </Link>
+            <span className="hidden sm:inline text-border-default">·</span>
+            <Link href="/privacy-policy" className="hover:text-text-tertiary transition-colors flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5" />
+              Privacy Policy
+            </Link>
+            <span className="hidden sm:inline text-border-default">·</span>
+            <Link href="/blogs" className="hover:text-text-tertiary transition-colors flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5" />
+              Safety Blogs
+            </Link>
+            <span className="hidden sm:inline text-border-default">·</span>
+            <span className="text-text-muted/50">SOS Emergency © 2025</span>
+          </div>
         </div>
+      </div>
 
-      </div>{/* end page body */}
-
+      {/* Toast */}
       <AnimatePresence>
         {toast && toast.show && (
           <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl shadow-2xl text-sm font-medium text-white z-50 border backdrop-blur-md
-              ${toast.type === "success" ? "bg-emerald-600/90 border-emerald-500/30 shadow-emerald-500/20" : ""}
-              ${toast.type === "error" ? "bg-red-600/90 border-red-500/30 shadow-red-500/20" : ""}
-              ${toast.type === "info" ? "bg-blue-600/90 border-blue-500/30 shadow-blue-500/20" : ""}
-              ${toast.type === "warning" ? "bg-orange-600/90 border-orange-500/30 shadow-orange-500/20" : ""}
+            className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3.5 rounded-2xl shadow-2xl text-sm font-medium text-text-primary z-50 border backdrop-blur-xl
+              ${toast.type === "success" ? "bg-accent-emerald/90 border-accent-emerald/20 shadow-accent-emerald/10" : ""}
+              ${toast.type === "error" ? "bg-accent-coral/90 border-accent-coral/20 shadow-accent-coral/10" : ""}
+              ${toast.type === "info" ? "bg-accent-blue/90 border-accent-blue/20 shadow-accent-blue/10" : ""}
+              ${toast.type === "warning" ? "bg-accent-gold/90 border-accent-gold/20 shadow-accent-gold/10" : ""}
             `}
           >
             {toast.text}
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

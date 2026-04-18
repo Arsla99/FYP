@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Shield,
+  ShieldCheck,
+  HeartPulse,
+  Check,
+  Zap,
+  BadgeCheck,
+  Headphones,
+  Lock,
+  CreditCard,
+  X,
+  AlertCircle,
+  Loader2,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
 import Navbar from '../../components/Navbar';
 
 interface Plan {
@@ -29,6 +45,52 @@ function formatExpiry(v: string) {
   return d.length >= 3 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
 }
 
+const planAccent = (id: string) => {
+  switch (id) {
+    case 'starter':
+      return {
+        bg: 'bg-accent-blue/10',
+        text: 'text-accent-blue',
+        border: 'border-accent-blue/20',
+        glow: 'shadow-glow-blue',
+      };
+    case 'premium':
+      return {
+        bg: 'bg-accent-gold/10',
+        text: 'text-accent-gold',
+        border: 'border-accent-gold/20',
+        glow: 'shadow-glow-gold',
+      };
+    case 'lifesaving':
+      return {
+        bg: 'bg-accent-coral/10',
+        text: 'text-accent-coral',
+        border: 'border-accent-coral/20',
+        glow: 'shadow-glow-coral',
+      };
+    default:
+      return {
+        bg: 'bg-accent-blue/10',
+        text: 'text-accent-blue',
+        border: 'border-accent-blue/20',
+        glow: 'shadow-glow-blue',
+      };
+  }
+};
+
+const PlanIcon = ({ id, className }: { id: string; className?: string }) => {
+  switch (id) {
+    case 'starter':
+      return <Shield className={className} />;
+    case 'premium':
+      return <ShieldCheck className={className} />;
+    case 'lifesaving':
+      return <HeartPulse className={className} />;
+    default:
+      return <Shield className={className} />;
+  }
+};
+
 export default function PlansPage() {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -55,8 +117,8 @@ export default function PlansPage() {
         '1 Emergency Contact',
         'Voice Commands (5 keywords)',
         'Basic Fear Detection',
-        'Email Support'
-      ]
+        'Email Support',
+      ],
     },
     {
       id: 'premium',
@@ -74,8 +136,8 @@ export default function PlansPage() {
         'Real-time Audio Monitoring',
         'SMS + Call Alerts',
         '24/7 Priority Support',
-        'Emergency Blog Access'
-      ]
+        'Emergency Blog Access',
+      ],
     },
     {
       id: 'lifesaving',
@@ -94,9 +156,9 @@ export default function PlansPage() {
         'Emergency Services Integration',
         'White-glove Support',
         'Custom Emergency Plans',
-        'Advanced Analytics'
-      ]
-    }
+        'Advanced Analytics',
+      ],
+    },
   ];
 
   useEffect(() => {
@@ -105,15 +167,20 @@ export default function PlansPage() {
         const response = await fetch('/api/user/me', {
           method: 'GET',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         });
-        if (response.status === 401) { router.push('/auth'); return; }
+        if (response.status === 401) {
+          router.push('/auth');
+          return;
+        }
         if (response.ok) {
           const userData = await response.json();
           setUserRole(userData.role);
           if (userData.subscription?.planId) setActivePlan(userData.subscription.planId);
         }
-      } catch { router.push('/auth'); }
+      } catch {
+        router.push('/auth');
+      }
     };
     checkUser();
   }, [router]);
@@ -121,7 +188,7 @@ export default function PlansPage() {
   // Open payment modal
   const handleSelectPlan = (planId: string) => {
     if (userRole === 'admin') return;
-    const plan = plans.find(p => p.id === planId);
+    const plan = plans.find((p) => p.id === planId);
     if (!plan) return;
     setPayingPlan(plan);
     setCard({ name: '', number: '', expiry: '', cvv: '' });
@@ -143,7 +210,7 @@ export default function PlansPage() {
     setPayStep('processing');
 
     // Simulate 2s payment processing
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 2000));
 
     try {
       const res = await fetch('/api/user/select-plan', {
@@ -167,138 +234,219 @@ export default function PlansPage() {
     }
   };
 
-  const closeModal = () => { setPayingPlan(null); setPayStep('form'); };
+  const closeModal = () => {
+    setPayingPlan(null);
+    setPayStep('form');
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gray-950 text-white"
+      className="min-h-screen bg-bg-base text-text-primary"
     >
       <Navbar />
 
-      <div className="container mx-auto px-4 py-12 pb-28 max-w-6xl">
+      {/* Subtle background orbs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div
+          className="absolute -top-[20%] left-[10%] h-[500px] w-[500px] rounded-full opacity-[0.07] blur-[100px]"
+          style={{ background: 'var(--accent-blue)' }}
+        />
+        <div
+          className="absolute top-[40%] -right-[10%] h-[400px] w-[400px] rounded-full opacity-[0.05] blur-[100px]"
+          style={{ background: 'var(--accent-purple)' }}
+        />
+      </div>
 
+      <div className="relative mx-auto max-w-6xl px-4 py-16 pb-28 md:py-24">
         {/* ── Header ── */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-6">
-            <span className="material-icons text-sm">workspace_premium</span>
-            Safety Plans
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-            Choose Your{' '}
-            <span className="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
-              Safety Plan
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-20 text-center"
+        >
+          <div className="mb-6 flex items-center justify-center gap-2">
+            <span className="badge badge-gold">
+              <Sparkles className="h-3 w-3" />
+              Safety Plans
             </span>
+          </div>
+          <h1 className="mb-5 text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
+            Choose Your{' '}
+            <span className="text-gradient">Safety Plan</span>
           </h1>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Protect yourself and your loved ones with AI-powered emergency response. Pick the plan that fits your needs.
+          <p className="mx-auto max-w-xl text-base leading-relaxed text-text-secondary md:text-lg">
+            Protect yourself and your loved ones with AI-powered emergency response. Pick the plan
+            that fits your needs.
           </p>
           {userRole === 'admin' && (
-            <motion.button onClick={() => router.push('/admin')}
-              className="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-red-500/20"
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-              <span className="material-icons text-sm">admin_panel_settings</span>
+            <motion.button
+              onClick={() => router.push('/admin')}
+              className="btn-danger mt-8"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <ShieldCheck className="h-4 w-4" />
               Admin Dashboard
             </motion.button>
           )}
         </motion.div>
 
         {/* ── Plans Grid ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          {plans.map((plan, index) => (
-            <motion.div key={plan.id}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`group relative flex flex-col rounded-3xl p-[1px] hover-lift ${
-                plan.popular
-                  ? 'bg-gradient-to-b from-purple-500 to-purple-700 shadow-[0_0_60px_rgba(168,85,247,0.35)]'
-                  : 'bg-gradient-to-b from-white/15 to-white/5 hover:from-white/25 hover:to-white/10'
-              }`}
-            >
-              <div className={`relative z-10 flex flex-col h-full rounded-3xl bg-gray-900/60 backdrop-blur-2xl border border-white/[0.06] p-6 md:p-8 ${
-                plan.popular ? 'shadow-inner shadow-purple-500/10' : ''
-              }`}>
-                {/* Popular badge */}
-                {plan.popular && (
-                  <div className="absolute -top-4 inset-x-0 flex justify-center">
-                    <span className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-5 py-1.5 rounded-full text-xs font-bold shadow-lg shadow-purple-500/30 uppercase tracking-wider">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {plans.map((plan, index) => {
+            const accent = planAccent(plan.id);
+            const isActive = activePlan === plan.id;
 
-                {/* Icon + name */}
-                <div className="mb-6">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center mb-5 shadow-lg`}>
-                    <span className="material-icons text-2xl text-white">{plan.icon}</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
-                  <div className="flex items-end gap-1">
-                    <span className="text-4xl font-extrabold text-white">${plan.price}</span>
-                    <span className="text-gray-500 text-sm mb-1.5">/{plan.duration.replace('per ', '')}</span>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-white/8 mb-6" />
-
-                {/* Features */}
-                <ul className="space-y-3 flex-1 mb-8">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="material-icons text-green-400 text-base mt-0.5 shrink-0">check_circle</span>
-                      <span className="text-gray-300 text-sm leading-relaxed">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  onClick={() => handleSelectPlan(plan.id)}
-                  disabled={userRole === 'admin' || activePlan === plan.id}
-                  className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 disabled:cursor-not-allowed ${
-                    activePlan === plan.id
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 opacity-90'
-                      : `bg-gradient-to-r ${plan.color} hover:opacity-90 text-white shadow-lg shadow-black/20 dark:shadow-black/20`
+            return (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: index * 0.1,
+                  duration: 0.6,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className={`relative flex flex-col rounded-2xl p-px ${
+                  plan.popular
+                    ? 'shadow-glow-gold'
+                    : ''
+                }`}
+                style={
+                  plan.popular
+                    ? {
+                        background:
+                          'linear-gradient(180deg, var(--accent-blue) 0%, rgba(59,130,246,0.3) 30%, rgba(59,130,246,0.05) 60%, transparent 100%)',
+                      }
+                    : {
+                        background:
+                          'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 40%, transparent 70%)',
+                      }
+                }
+              >
+                <div
+                  className={`relative flex h-full flex-col rounded-2xl border p-6 md:p-8 ${
+                    plan.popular
+                      ? 'border-accent-blue/30 bg-bg-surface'
+                      : 'border-border-default bg-bg-elevated'
                   }`}
                 >
-                  {activePlan === plan.id
-                    ? <span className="flex items-center justify-center gap-2"><span className="material-icons text-sm">verified</span>Active Plan</span>
-                    : userRole === 'admin' ? 'Admin Account' : 'Get Started'
-                  }
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
+                  {/* Popular badge */}
+                  {plan.popular && (
+                    <div className="absolute -top-3 inset-x-0 flex justify-center">
+                      <span className="badge badge-gold shadow-lg">
+                        Most Popular
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Icon + name */}
+                  <div className="mb-8">
+                    <div
+                      className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl border ${accent.bg} ${accent.border} ${accent.text}`}
+                    >
+                      <PlanIcon id={plan.id} className="h-6 w-6" />
+                    </div>
+                    <h3 className="mb-1 text-xl font-bold text-text-primary">{plan.name}</h3>
+                    <div className="flex items-end gap-1.5">
+                      <span className="text-4xl font-extrabold tracking-tight text-text-primary">
+                        ${plan.price}
+                      </span>
+                      <span className="mb-1.5 text-sm text-text-tertiary">
+                        /{plan.duration.replace('per ', '')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div
+                    className="mb-6 h-px"
+                    style={{
+                      background:
+                        'linear-gradient(90deg, transparent, var(--border-default), transparent)',
+                    }}
+                  />
+
+                  {/* Features */}
+                  <ul className="mb-8 flex-1 space-y-3.5">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-emerald/10">
+                          <Check className="h-3 w-3 text-accent-emerald" />
+                        </div>
+                        <span className="text-sm leading-relaxed text-text-secondary">
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleSelectPlan(plan.id)}
+                    disabled={userRole === 'admin' || isActive}
+                    className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 disabled:cursor-not-allowed ${
+                      isActive
+                        ? 'bg-accent-emerald text-bg-base shadow-glow-emerald'
+                        : plan.popular
+                        ? 'btn-primary'
+                        : 'bg-bg-hover border border-border-default text-text-primary hover:bg-bg-pressed hover:border-border-hover'
+                    }`}
+                  >
+                    {isActive ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Check className="h-4 w-4" />
+                        Active Plan
+                      </span>
+                    ) : userRole === 'admin' ? (
+                      'Admin Account'
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        Get Started
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                    )}
+                  </motion.button>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* ── Trust bar ── */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          className="rounded-3xl border border-white/[0.08] bg-gray-900/60 backdrop-blur-2xl shadow-2xl shadow-black/20 dark:shadow-black/20 p-6 md:p-8">
-          <p className="text-center text-xs text-gray-500 uppercase tracking-wider font-semibold mb-6">Why professionals choose SOS</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="card mt-16 p-6 md:p-8"
+        >
+          <p className="mb-8 text-center text-xs font-semibold uppercase tracking-[0.15em] text-text-tertiary">
+            Why professionals choose SOS
+          </p>
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {[
-              { icon: "speed",          label: "< 3s Alert Speed",        color: "text-orange-400" },
-              { icon: "verified_user",  label: "Certified Protocols",     color: "text-blue-400" },
-              { icon: "support_agent",  label: "24/7 Support",            color: "text-purple-400" },
-              { icon: "lock",           label: "End-to-End Secure",       color: "text-green-400" },
+              { icon: Zap, label: '< 3s Alert Speed', color: 'text-accent-gold' },
+              { icon: BadgeCheck, label: 'Certified Protocols', color: 'text-accent-blue' },
+              { icon: Headphones, label: '24/7 Support', color: 'text-accent-purple' },
+              { icon: Lock, label: 'End-to-End Secure', color: 'text-accent-emerald' },
             ].map((item) => (
-              <div key={item.label} className="flex flex-col items-center gap-2 text-center">
-                <div className={`w-10 h-10 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center ${item.color}`}>
-                  <span className="material-icons text-lg">{item.icon}</span>
+              <div key={item.label} className="flex flex-col items-center gap-3 text-center">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border-default bg-bg-hover">
+                  <item.icon className={`h-5 w-5 ${item.color}`} />
                 </div>
-                <span className="text-gray-400 text-xs font-medium">{item.label}</span>
+                <span className="text-xs font-medium text-text-secondary">{item.label}</span>
               </div>
             ))}
           </div>
         </motion.div>
 
-        <p className="text-center text-gray-600 text-xs mt-6">
+        <p className="mt-8 text-center text-xs text-text-tertiary">
           All plans include a 7-day free trial · Cancel anytime · No hidden fees
         </p>
       </div>
@@ -307,56 +455,74 @@ export default function PlansPage() {
       <AnimatePresence>
         {payingPlan && (
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-            onClick={(e) => { if (e.target === e.currentTarget && payStep !== 'processing') closeModal(); }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/60 p-4 backdrop-blur-md"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && payStep !== 'processing') closeModal();
+            }}
           >
             <motion.div
               initial={{ scale: 0.92, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-              className="w-full max-w-md bg-gray-900/80 backdrop-blur-2xl border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl dark:shadow-black/20"
+              className="card-elevated w-full max-w-md overflow-hidden rounded-2xl border border-border-default shadow-2xl"
             >
               {/* Modal header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+              <div className="flex items-center justify-between border-b border-border-default px-6 py-4">
                 <div>
-                  <p className="text-sm font-semibold text-white">Complete Your Purchase</p>
-                  <p className="text-xs text-white/40 mt-0.5">{payingPlan.name} Plan · ${payingPlan.price}/mo</p>
+                  <p className="text-sm font-semibold text-text-primary">Complete Your Purchase</p>
+                  <p className="mt-0.5 text-xs text-text-tertiary">
+                    {payingPlan.name} Plan · ${payingPlan.price}/mo
+                  </p>
                 </div>
                 {payStep !== 'processing' && (
-                  <button onClick={closeModal} className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors border border-white/10 hover:border-white/20">
-                    <span className="material-icons text-white text-base">close</span>
+                  <button
+                    onClick={closeModal}
+                    className="icon-btn"
+                  >
+                    <X className="h-4 w-4" />
                   </button>
                 )}
               </div>
 
               <div className="px-6 py-6">
-
                 {/* ── Processing ── */}
                 {payStep === 'processing' && (
-                  <div className="flex flex-col items-center gap-4 py-8">
-                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
-                      className="w-12 h-12 rounded-full border-[3px] border-orange-500 border-t-transparent" />
-                    <p className="text-sm text-white/70">Processing payment…</p>
-                    <p className="text-xs text-white/30">Please do not close this window</p>
+                  <div className="flex flex-col items-center gap-4 py-10">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+                    >
+                      <Loader2 className="h-10 w-10 text-accent-gold" />
+                    </motion.div>
+                    <p className="text-sm text-text-secondary">Processing payment…</p>
+                    <p className="text-xs text-text-tertiary">Please do not close this window</p>
                   </div>
                 )}
 
                 {/* ── Success ── */}
                 {payStep === 'success' && (
-                  <div className="flex flex-col items-center gap-4 py-8">
-                    <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-                      <span className="material-icons text-emerald-400 text-3xl">check_circle</span>
+                  <div className="flex flex-col items-center gap-4 py-10">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-accent-emerald/20 bg-accent-emerald/10">
+                      <Check className="h-7 w-7 text-accent-emerald" />
                     </div>
                     <div className="text-center">
-                      <p className="text-base font-semibold text-white">Payment Successful!</p>
-                      <p className="text-xs text-white/50 mt-1">{payingPlan.name} plan is now active on your account</p>
+                      <p className="text-base font-semibold text-text-primary">Payment Successful!</p>
+                      <p className="mt-1 text-xs text-text-tertiary">
+                        {payingPlan.name} plan is now active on your account
+                      </p>
                     </div>
                     <motion.button
-                      whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                      onClick={() => { closeModal(); router.push('/sos'); }}
-                      className="mt-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white text-sm font-semibold transition-all shadow-lg shadow-emerald-500/20"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => {
+                        closeModal();
+                        router.push('/sos');
+                      }}
+                      className="btn-primary mt-2"
                     >
                       Go to Dashboard
                     </motion.button>
@@ -367,90 +533,116 @@ export default function PlansPage() {
                 {payStep === 'form' && (
                   <>
                     {/* Order summary */}
-                    <div className="flex items-center justify-between rounded-2xl bg-gray-900/40 backdrop-blur-md border border-white/[0.08] px-4 py-3 mb-5">
-                      <div className="flex items-center gap-2.5">
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${payingPlan.color} flex items-center justify-center`}>
-                          <span className="material-icons text-white text-sm">{payingPlan.icon}</span>
+                    <div className="mb-6 flex items-center justify-between rounded-xl border border-border-default bg-bg-elevated px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-bg-hover">
+                          <PlanIcon
+                            id={payingPlan.id}
+                            className={`h-4 w-4 ${planAccent(payingPlan.id).text}`}
+                          />
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-white">{payingPlan.name} Plan</p>
-                          <p className="text-[10px] text-white/40">Monthly subscription</p>
+                          <p className="text-xs font-semibold text-text-primary">
+                            {payingPlan.name} Plan
+                          </p>
+                          <p className="text-xs text-text-tertiary">Monthly subscription</p>
                         </div>
                       </div>
-                      <p className="text-lg font-bold text-white">${payingPlan.price}<span className="text-xs text-white/40 font-normal">/mo</span></p>
+                      <p className="text-lg font-bold text-text-primary">
+                        ${payingPlan.price}
+                        <span className="ml-0.5 text-xs font-normal text-text-tertiary">/mo</span>
+                      </p>
                     </div>
 
                     {/* Card fields */}
-                    <div className="space-y-3">
+                    <div className="space-y-3.5">
                       <div>
-                        <label className="block text-[11px] text-white/50 mb-1.5 font-medium">Cardholder Name</label>
+                        <label className="mb-2 block text-xs font-medium text-text-tertiary">
+                          Cardholder Name
+                        </label>
                         <input
                           type="text"
                           placeholder="John Smith"
                           value={card.name}
-                          onChange={e => setCard(c => ({ ...c, name: e.target.value }))}
-                          className="auth-input"
+                          onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
+                          className="input"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] text-white/50 mb-1.5 font-medium">Card Number</label>
+                        <label className="mb-2 block text-xs font-medium text-text-tertiary">
+                          Card Number
+                        </label>
                         <div className="relative">
                           <input
                             type="text"
                             placeholder="1234 5678 9012 3456"
                             value={card.number}
-                            onChange={e => setCard(c => ({ ...c, number: formatCardNumber(e.target.value) }))}
+                            onChange={(e) =>
+                              setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))
+                            }
                             maxLength={19}
-                            className="auth-input pr-10 font-mono"
+                            className="input pr-10 font-mono"
                           />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 material-icons text-white/20 text-lg">credit_card</span>
+                          <CreditCard className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[11px] text-white/50 mb-1.5 font-medium">Expiry (MM/YY)</label>
+                          <label className="mb-2 block text-xs font-medium text-text-tertiary">
+                            Expiry (MM/YY)
+                          </label>
                           <input
                             type="text"
                             placeholder="08/27"
                             value={card.expiry}
-                            onChange={e => setCard(c => ({ ...c, expiry: formatExpiry(e.target.value) }))}
+                            onChange={(e) =>
+                              setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))
+                            }
                             maxLength={5}
-                            className="auth-input font-mono"
+                            className="input font-mono"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] text-white/50 mb-1.5 font-medium">CVV</label>
+                          <label className="mb-2 block text-xs font-medium text-text-tertiary">
+                            CVV
+                          </label>
                           <input
                             type="password"
                             placeholder="•••"
                             value={card.cvv}
-                            onChange={e => setCard(c => ({ ...c, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                            onChange={(e) =>
+                              setCard((c) => ({
+                                ...c,
+                                cvv: e.target.value.replace(/\D/g, '').slice(0, 4),
+                              }))
+                            }
                             maxLength={4}
-                            className="auth-input font-mono"
+                            className="input font-mono"
                           />
                         </div>
                       </div>
                     </div>
 
                     {cardError && (
-                      <p className="mt-3 text-xs text-red-400 flex items-center gap-1.5">
-                        <span className="material-icons text-sm">error_outline</span>
+                      <p className="mt-4 flex items-center gap-1.5 text-xs text-accent-coral">
+                        <AlertCircle className="h-3.5 w-3.5" />
                         {cardError}
                       </p>
                     )}
 
                     <motion.button
-                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={handlePaySubmit}
-                      className={`mt-5 w-full py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r ${payingPlan.color} hover:opacity-90 transition-all shadow-lg`}
+                      className="btn-primary mt-6 w-full"
                     >
                       Pay ${payingPlan.price} / month
                     </motion.button>
 
-                    <p className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-white/25">
-                      <span className="material-icons text-xs">lock</span>
+                    <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-text-muted">
+                      <Lock className="h-3 w-3" />
                       Payments are securely encrypted · Cancel anytime
                     </p>
                   </>

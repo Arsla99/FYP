@@ -7,13 +7,15 @@ interface SpotlightCardProps {
   className?: string;
   hover?: boolean;
   glowColor?: string;
+  borderGlow?: boolean;
 }
 
 export default function SpotlightCard({ 
   children, 
   className,
   hover = true,
-  glowColor = 'rgba(249, 115, 22, 0.15)'
+  glowColor = 'rgba(249, 115, 22, 0.12)',
+  borderGlow = true
 }: SpotlightCardProps) {
   const divRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -34,36 +36,38 @@ export default function SpotlightCard({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      whileHover={hover ? { y: -4, scale: 1.005 } : undefined}
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={hover ? { y: -3, scale: 1.002 } : undefined}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gray-900/50 backdrop-blur-2xl",
+        "relative overflow-hidden rounded-2xl border border-white/[0.07] bg-gray-900/50 backdrop-blur-2xl",
         "light:bg-white/70 light:border-black/[0.06]",
         className
       )}
       style={{
-        background: hover 
-          ? 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)' 
-          : undefined
+        boxShadow: hover 
+          ? '0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.03)'
+          : '0 4px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.02)'
       }}
     >
       {/* Spotlight gradient */}
       <div
-        className="pointer-events-none absolute -inset-px transition-opacity duration-300"
+        className="pointer-events-none absolute -inset-px transition-opacity duration-500"
         style={{
           opacity,
-          background: `radial-gradient(400px circle at ${position.x}px ${position.y}px, ${glowColor}, transparent 60%)`,
+          background: `radial-gradient(500px circle at ${position.x}px ${position.y}px, ${glowColor}, transparent 55%)`,
         }}
       />
       
       {/* Subtle border glow on hover */}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-500"
-        style={{
-          opacity: opacity * 0.5,
-          boxShadow: `inset 0 0 0 1px ${glowColor}`,
-        }}
-      />
+      {borderGlow && (
+        <div
+          className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-500"
+          style={{
+            opacity: opacity * 0.6,
+            boxShadow: `inset 0 0 0 1px ${glowColor}`,
+          }}
+        />
+      )}
 
       <div className="relative z-10 h-full">
         {children}

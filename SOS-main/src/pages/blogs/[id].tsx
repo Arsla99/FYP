@@ -1,10 +1,10 @@
 import React from 'react';
 import Navbar from '../../components/Navbar';
 import Link from 'next/link';
-import { useTheme } from '../../utils/ThemeContext';
 import { connectToDatabase } from '../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { motion } from 'framer-motion';
+import { ArrowLeft, Clock, BookOpen, FileText } from 'lucide-react';
 
 interface BlogProps {
   blog: any | null;
@@ -12,11 +12,11 @@ interface BlogProps {
 }
 
 const CAT_COLORS: Record<string, string> = {
-  health: 'bg-green-500/10 text-green-500 border-green-500/20',
-  emergency: 'bg-red-500/10 text-red-500 border-red-500/20',
-  'first-aid': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  'mental-health': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  general: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+  health: 'bg-accent-emerald/10 text-accent-emerald border-accent-emerald/20',
+  emergency: 'bg-accent-coral/10 text-accent-coral border-accent-coral/20',
+  'first-aid': 'bg-accent-blue/10 text-accent-blue border-accent-blue/20',
+  'mental-health': 'bg-accent-purple/10 text-accent-purple border-accent-purple/20',
+  general: 'bg-text-tertiary/10 text-text-tertiary border-text-tertiary/20',
 };
 
 function readTime(content: string) {
@@ -26,35 +26,21 @@ function readTime(content: string) {
 
 const pageVariants = {
   hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
   exit: { opacity: 0, y: -12, transition: { duration: 0.25 } },
 };
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
 };
 
 export default function BlogPage({ blog, related }: BlogProps) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
   if (!blog) {
     return (
       <motion.div
@@ -62,14 +48,14 @@ export default function BlogPage({ blog, related }: BlogProps) {
         initial="hidden"
         animate="visible"
         exit="exit"
-        className={`min-h-screen flex flex-col items-center justify-center p-8 text-center ${isDark ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'}`}
+        className="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-bg-base text-text-primary"
       >
         <Navbar />
-        <span className="material-icons text-6xl text-gray-400 mb-5 animate-float">article</span>
-        <h2 className="text-2xl font-bold mb-2">Article not found</h2>
-        <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>This article may have been removed or doesn't exist.</p>
+        <FileText className="w-16 h-16 text-text-muted mb-5 animate-float-y" />
+        <h2 className="text-2xl font-bold mb-2 text-text-primary">Article not found</h2>
+        <p className="text-text-tertiary">This article may have been removed or doesn&apos;t exist.</p>
         <Link href="/blogs">
-          <button className="mt-7 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]">
+          <button className="mt-7 px-6 py-3 btn-primary">
             Back to Blogs
           </button>
         </Link>
@@ -83,7 +69,7 @@ export default function BlogPage({ blog, related }: BlogProps) {
       initial="hidden"
       animate="visible"
       exit="exit"
-      className={`min-h-screen font-sans ${isDark ? 'bg-gray-950' : 'bg-[#f8f9fa]'}`}
+      className="min-h-screen font-sans bg-bg-base"
     >
       <Navbar />
 
@@ -97,11 +83,9 @@ export default function BlogPage({ blog, related }: BlogProps) {
           {/* Back */}
           <motion.div variants={itemVariants}>
             <Link href="/blogs"
-              className={`inline-flex items-center gap-2 text-sm font-medium mb-8 px-4 py-2 rounded-xl border transition-all group
-                ${isDark ? 'text-white/60 hover:text-white bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10' : 'text-gray-500 hover:text-gray-900 bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'}
-              `}
+              className="inline-flex items-center gap-2 text-sm font-medium mb-8 px-4 py-2.5 rounded-xl border border-border-default bg-bg-elevated text-text-tertiary hover:text-text-primary hover:border-border-hover hover:bg-bg-hover transition-all group"
             >
-              <span className="material-icons text-[18px] transition-transform group-hover:-translate-x-0.5">arrow_back</span>
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
               All articles
             </Link>
           </motion.div>
@@ -111,8 +95,8 @@ export default function BlogPage({ blog, related }: BlogProps) {
             <span className={`text-xs font-semibold px-3 py-1 rounded-full border capitalize ${CAT_COLORS[blog.category] || CAT_COLORS.general}`}>
               {(blog.category || 'general').replace('-', ' ')}
             </span>
-            <span className={`text-xs flex items-center gap-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-              <span className="material-icons text-[14px]">schedule</span>
+            <span className="text-xs flex items-center gap-1 text-text-muted">
+              <Clock className="w-3.5 h-3.5" />
               {readTime(blog.content)} min read
             </span>
           </motion.div>
@@ -120,7 +104,7 @@ export default function BlogPage({ blog, related }: BlogProps) {
           {/* Title */}
           <motion.h1
             variants={itemVariants}
-            className={`text-3xl md:text-4xl lg:text-[2.6rem] font-extrabold leading-[1.15] mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}
+            className="text-3xl md:text-4xl lg:text-[2.6rem] font-extrabold leading-[1.15] mb-6 text-text-primary"
           >
             {blog.title}
           </motion.h1>
@@ -128,17 +112,17 @@ export default function BlogPage({ blog, related }: BlogProps) {
           {/* Author row */}
           <motion.div
             variants={itemVariants}
-            className={`flex items-center gap-3 pb-6 mb-8 border-b ${isDark ? 'border-white/8' : 'border-gray-200'}`}
+            className="flex items-center gap-3 pb-6 mb-8 border-b border-border-default"
           >
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white text-sm font-bold shrink-0 ring-2 ring-white/10">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-gold to-accent-gold-light flex items-center justify-center text-bg-base text-sm font-bold shrink-0 ring-2 ring-border-default">
                 {(blog.author?.name || 'A').charAt(0).toUpperCase()}
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-gray-950 rounded-full" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-accent-emerald border-2 border-bg-base rounded-full" />
             </div>
             <div>
-              <p className={`text-sm font-semibold leading-none ${isDark ? 'text-white' : 'text-gray-900'}`}>{blog.author?.name || 'Unknown'}</p>
-              <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+              <p className="text-sm font-semibold leading-none text-text-primary">{blog.author?.name || 'Unknown'}</p>
+              <p className="text-xs mt-1 text-text-tertiary">
                 {new Date(blog.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
@@ -148,7 +132,7 @@ export default function BlogPage({ blog, related }: BlogProps) {
           {blog.imageUrl && (
             <motion.div
               variants={itemVariants}
-              className={`rounded-2xl overflow-hidden mb-10 border ${isDark ? 'border-white/8' : 'border-gray-200'}`}
+              className="rounded-2xl overflow-hidden mb-10 border border-border-default"
             >
               <img src={blog.imageUrl} alt={blog.title} className="w-full h-64 md:h-96 object-cover" />
             </motion.div>
@@ -157,11 +141,11 @@ export default function BlogPage({ blog, related }: BlogProps) {
           {/* Content */}
           <motion.div
             variants={itemVariants}
-            className={`prose prose-base max-w-none mb-12 p-6 md:p-8 rounded-2xl border glass-card
-              ${isDark
-                ? 'border-white/8 prose-invert prose-headings:text-white prose-p:text-gray-300 prose-strong:text-white prose-a:text-orange-400 prose-li:text-gray-300 prose-blockquote:text-gray-400 prose-blockquote:border-orange-500'
-                : 'border-gray-200 prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-a:text-orange-600 prose-li:text-gray-700 prose-blockquote:border-orange-400'
-              }`}
+            className="prose prose-base max-w-none mb-12 p-6 md:p-8 rounded-2xl border border-border-default bg-bg-elevated/50 backdrop-blur-sm
+              prose-headings:text-text-primary prose-p:text-text-secondary prose-strong:text-text-primary
+              prose-a:text-accent-gold hover:prose-a:text-accent-gold-light prose-li:text-text-secondary
+              prose-blockquote:text-text-tertiary prose-blockquote:border-accent-gold/30 prose-code:text-accent-gold
+              prose-hr:border-border-default"
             dangerouslySetInnerHTML={{ __html: blog.content }}
           />
 
@@ -169,13 +153,11 @@ export default function BlogPage({ blog, related }: BlogProps) {
           {blog.tags?.length > 0 && (
             <motion.div
               variants={itemVariants}
-              className={`flex flex-wrap gap-2 pt-6 pb-6 border-t border-b ${isDark ? 'border-white/8' : 'border-gray-200'}`}
+              className="flex flex-wrap gap-2 pt-6 pb-6 border-t border-b border-border-default"
             >
               {blog.tags.map((tag: string, i: number) => (
                 <Link key={i} href={`/blogs?search=${encodeURIComponent(tag)}`}>
-                  <span className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer
-                    ${isDark ? 'bg-white/5 border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/10' : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200 hover:border-gray-300'}
-                  `}>
+                  <span className="text-xs px-3 py-1.5 rounded-full border border-border-default bg-bg-elevated text-text-tertiary hover:text-text-primary hover:border-border-hover hover:bg-bg-hover transition-colors cursor-pointer">
                     #{tag}
                   </span>
                 </Link>
@@ -193,35 +175,29 @@ export default function BlogPage({ blog, related }: BlogProps) {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-2xl mx-auto px-4 mt-14"
           >
-            <h2 className={`text-lg font-bold mb-6 flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              <span className="material-icons text-orange-500">auto_stories</span>
+            <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-text-primary">
+              <BookOpen className="w-5 h-5 text-accent-gold" />
               Related Articles
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">
               {related.map((r: any) => (
                 <Link key={r._id} href={`/blogs/${r._id}`}
-                  className={`group flex gap-4 p-4 rounded-2xl border transition-all hover-lift
-                    ${isDark ? 'bg-gray-900/60 border-white/8 hover:border-orange-500/30' : 'bg-white border-gray-200 hover:border-orange-300'}
-                  `}
+                  className="group flex gap-4 p-4 rounded-2xl border border-border-default bg-bg-elevated/50 hover:border-accent-gold/30 hover:bg-bg-hover transition-all hover:-translate-y-0.5"
                 >
                   {r.imageUrl ? (
                     <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 relative">
-                      <img
-                        src={r.imageUrl}
-                        alt={r.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
+                      <img src={r.imageUrl} alt={r.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     </div>
                   ) : (
-                    <div className={`w-20 h-16 rounded-xl flex items-center justify-center shrink-0 ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
-                      <span className="material-icons text-gray-400">article</span>
+                    <div className="w-20 h-16 rounded-xl flex items-center justify-center shrink-0 bg-bg-hover">
+                      <FileText className="w-5 h-5 text-text-muted" />
                     </div>
                   )}
                   <div className="overflow-hidden flex flex-col justify-center">
-                    <p className={`text-sm font-semibold line-clamp-2 leading-snug group-hover:text-orange-500 transition-colors ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    <p className="text-sm font-semibold line-clamp-2 leading-snug group-hover:text-accent-gold transition-colors text-text-primary">
                       {r.title}
                     </p>
-                    <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <p className="text-xs mt-1 text-text-muted">
                       {new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
                   </div>

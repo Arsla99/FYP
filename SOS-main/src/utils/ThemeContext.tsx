@@ -8,16 +8,16 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = (localStorage.getItem('sos-theme') as Theme) || 'light';
+    const saved = (localStorage.getItem('sos-theme') as Theme) || 'dark';
     setTheme(saved);
     applyTheme(saved);
     setMounted(true);
@@ -41,7 +41,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTheme(next);
   };
 
-  // Avoid hydration mismatch — render with SSR-inlined theme until mounted
   if (!mounted) {
     return (
       <ThemeContext.Provider value={{ theme, toggleTheme }}>
