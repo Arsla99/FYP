@@ -864,9 +864,11 @@ export default function Home() {
       setMessageType("info");
 
       const alertData = {
-        location: currentLat && currentLon 
-          ? `Lat: ${currentLat.toFixed(6)}, Lon: ${currentLon.toFixed(6)}` 
+        location: currentLat && currentLon
+          ? `Lat: ${currentLat.toFixed(6)}, Lon: ${currentLon.toFixed(6)}`
           : locationStatus,
+        lat: currentLat,
+        lon: currentLon,
         emotion: lastEmotion || 'unknown',
         fearLevel: fearLevel,
         triggerMethod: isSOSTriggered ? 'AI Detection' : 'Manual',
@@ -876,12 +878,13 @@ export default function Home() {
 
       console.log('📞 Sending SOS alert with data:', alertData);
 
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const response = await fetch('/api/emergency/send-alert', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers,
         body: JSON.stringify(alertData)
       });
 

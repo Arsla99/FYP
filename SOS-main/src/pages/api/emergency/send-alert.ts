@@ -4,11 +4,16 @@ import { requireAuth } from '../../../utils/serverAuth';
 import connectDB from '../../../utils/db';
 import User from '../../../models/User';
 
-function buildSMSMessage(userName: string, location: string, triggerMethod: string, emotion: string, fearLevel: number): string {
+function buildSMSMessage(userName: string, location: string, triggerMethod: string, emotion: string, fearLevel: number, lat?: number, lon?: number): string {
+  const mapsLink = lat && lon
+    ? `https://maps.google.com/?q=${lat},${lon}`
+    : null;
+
   return (
     `🚨 EMERGENCY ALERT 🚨\n` +
     `${userName} needs help!\n\n` +
     `📍 Location: ${location}\n` +
+    (mapsLink ? `🗺️ Map: ${mapsLink}\n` : '') +
     `⚡ Trigger: ${triggerMethod}\n` +
     (emotion && emotion !== 'unknown' ? `😰 Emotion: ${emotion} (${fearLevel}%)\n` : '') +
     `🕐 Time: ${new Date().toLocaleString()}\n\n` +
@@ -67,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const { location, emotion, fearLevel, triggerMethod, detectedKeyword, timestamp } = req.body;
+    const { location, emotion, fearLevel, triggerMethod, detectedKeyword, timestamp, lat, lon } = req.body;
 
     const alertData = {
       userId: user.id,
@@ -86,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const result = await db.collection('emergency_alerts').insertOne(alertData);
     console.log(`🚨 Emergency alert created for ${user.email} → ${userDoc.contacts.length} contact(s)`);
 
-    const message = buildSMSMessage(user.name, alertData.location, alertData.triggerMethod, alertData.emotion, alertData.fearLevel);
+    const message = buildSMSMessage(user.name, alertData.location, alertData.triggerMethod, alertData.emotion, alertData.fearLevel, lat, lon);
 
     const twilioConfigured =
       process.env.TWILIO_ACCOUNT_SID &&
