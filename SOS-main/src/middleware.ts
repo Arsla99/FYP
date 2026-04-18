@@ -17,7 +17,7 @@ export default withAuth(
     callbacks: {
       authorized({ req, token }) {
         // Public routes that don't require auth
-        const publicPaths = ['/auth', '/blogs', '/support', '/privacy-policy', '/api'];
+        const publicPaths = ['/', '/auth', '/blogs', '/support', '/privacy-policy', '/api'];
         const isPublic = publicPaths.some(p => req.nextUrl.pathname.startsWith(p));
         if (isPublic) return true;
 
