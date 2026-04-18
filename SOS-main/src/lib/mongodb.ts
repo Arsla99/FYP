@@ -6,40 +6,44 @@ if (!process.env.MONGODB_URI) {
 
 const uri = process.env.MONGODB_URI;
 const options = {
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 30000,
+  connectTimeoutMS: 10000,
+  maxPoolSize: 10,
+  retryWrites: true,
 };
 
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
 
-if (process.env.NODE_ENV === 'development') {
-  // In development mode, use a global variable so that the value
-  // is preserved across module reloads caused by HMR (Hot Module Replacement).
-  let globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
-  };
+function createClientPromise(): Promise<MongoClient> {
+  const client = new MongoClient(uri, options);
+  return client.connect().catch((err) => {
+    if (process.env.NODE_ENV === 'development') {
+      global._mongoClientPromise = undefined;
+    }
+    throw err;
+  });
+}
 
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    globalWithMongo._mongoClientPromise = client.connect();
+function getClientPromise(): Promise<MongoClient> {
+  if (process.env.NODE_ENV === 'development') {
+    if (!global._mongoClientPromise) {
+      global._mongoClientPromise = createClientPromise();
+    }
+    return global._mongoClientPromise;
   }
-  clientPromise = globalWithMongo._mongoClientPromise;
-} else {
-  // In production mode, it's best to not use a global variable.
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  return createClientPromise();
 }
 
 export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db }> {
   try {
-    const client = await clientPromise;
+    const client = await getClientPromise();
     const db = client.db(process.env.MONGODB_DB || 'sosfyp');
-    
-    // Test the connection
     await db.admin().ping();
     console.log('✅ MongoDB connected successfully');
-    
     return { client, db };
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error);
@@ -47,4 +51,4 @@ export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db
   }
 }
 
-export default clientPromise;
+export default getClientPromise();
