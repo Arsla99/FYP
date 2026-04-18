@@ -13,11 +13,11 @@ const ThemeContext = createContext<ThemeContextValue>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = (localStorage.getItem('sos-theme') as Theme) || 'dark';
+    const saved = (localStorage.getItem('sos-theme') as Theme) || 'light';
     setTheme(saved);
     applyTheme(saved);
     setMounted(true);
