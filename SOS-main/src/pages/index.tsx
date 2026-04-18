@@ -7,9 +7,96 @@ import Image from "next/image";
 import {
   Shield, Activity, Mic, MapPin, Users, Bell, Zap,
   ArrowRight, ChevronRight, Phone, Heart, Clock, Lock,
-  Smartphone, Radio, FileText, Star
+  Smartphone, Radio, Star, ShieldAlert, Menu, X
 } from 'lucide-react';
 import Footer from "../components/Footer";
+
+/* ─── Landing Navbar ─── */
+function LandingNavbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      scrolled ? 'bg-bg-base/90 backdrop-blur-xl border-b border-border-default' : 'bg-transparent'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 md:h-20">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-gold to-accent-blue flex items-center justify-center shadow-glow-gold">
+              <ShieldAlert className="w-[18px] h-[18px] text-white" />
+            </div>
+            <span className="font-bold text-[15px] tracking-tight text-text-primary hidden sm:block">
+              SOS <span className="text-text-tertiary font-normal">Emergency</span>
+            </span>
+          </Link>
+
+          {/* Desktop links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {[
+              { href: '/blogs', label: 'Safety Guide' },
+              { href: '/support', label: 'Support' },
+              { href: '/privacy-policy', label: 'Privacy' },
+            ].map(({ href, label }) => (
+              <Link key={href} href={href}
+                className="px-3.5 py-2 text-sm font-medium text-text-secondary hover:text-text-primary rounded-lg hover:bg-bg-surface transition-all">
+                {label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* CTA */}
+          <div className="flex items-center gap-2">
+            <Link href="/auth" className="hidden sm:block">
+              <button className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary rounded-lg border border-border-default hover:border-border-hover bg-bg-surface transition-all">
+                Sign In
+              </button>
+            </Link>
+            <Link href="/auth">
+              <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                className="btn-primary text-sm px-5 py-2.5">
+                Get Started <ArrowRight className="w-3.5 h-3.5" />
+              </motion.button>
+            </Link>
+            <button onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden w-9 h-9 rounded-xl flex items-center justify-center bg-bg-surface border border-border-default text-text-secondary">
+              {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden bg-bg-elevated border-b border-border-default px-4 py-3 space-y-1">
+          {[
+            { href: '/blogs', label: 'Safety Guide' },
+            { href: '/support', label: 'Support' },
+            { href: '/privacy-policy', label: 'Privacy' },
+            { href: '/auth', label: 'Sign In' },
+          ].map(({ href, label }) => (
+            <Link key={href} href={href}
+              className="block px-3 py-2.5 text-sm font-medium text-text-secondary hover:text-text-primary rounded-xl hover:bg-bg-surface transition-colors">
+              {label}
+            </Link>
+          ))}
+          <Link href="/auth">
+            <button className="w-full mt-1 py-2.5 btn-primary text-sm justify-center">
+              Get Started <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </Link>
+        </div>
+      )}
+    </header>
+  );
+}
 
 /* ─── Animated Counter ─── */
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -162,6 +249,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-bg-base text-text-primary overflow-x-hidden">
+      <LandingNavbar />
       {/* ═══════ HERO ═══════ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}

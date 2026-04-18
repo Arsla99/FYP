@@ -13,7 +13,7 @@ import Footer from '../components/Footer';
 const HIDE_CHAT_ON = ['/auth'];
 const HIDE_AMBIENT_ON = ['/auth'];
 const HIDE_CURSOR_ON = ['/auth'];
-const HIDE_FOOTER_ON = ['/auth', '/sos', '/chat', '/admin'];
+const HIDE_FOOTER_ON = ['/', '/auth', '/sos', '/chat', '/admin'];
 
 export default function App({
   Component,

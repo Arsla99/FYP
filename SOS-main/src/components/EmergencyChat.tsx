@@ -194,14 +194,13 @@ function TypingDots() {
   return (
     <div className="flex items-start gap-2">
       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-        style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(139,92,246,0.25))', border: '1px solid rgba(255,255,255,0.08)' }}>
-        <Bot className="w-3.5 h-3.5" style={{ color: 'var(--accent-gold)' }} />
+        style={{ background: 'linear-gradient(135deg, #1d4ed8, #2563eb)', border: '1px solid rgba(255,255,255,0.15)' }}>
+        <Bot className="w-3.5 h-3.5 text-white" />
       </div>
       <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-tl-sm"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+        style={{ background: '#1e3a5f', border: '1px solid rgba(59,130,246,0.2)' }}>
         {[0, 1, 2].map(i => (
-          <motion.span key={i} className="block w-1.5 h-1.5 rounded-full"
-            style={{ background: 'var(--text-tertiary)' }}
+          <motion.span key={i} className="block w-1.5 h-1.5 rounded-full bg-blue-300"
             animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
             transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
           />
@@ -318,17 +317,13 @@ export default function EmergencyChat() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-full shadow-lg"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent-gold), var(--accent-purple))',
-              boxShadow: '0 4px 24px rgba(59,130,246,0.35), 0 0 0 1px rgba(255,255,255,0.08)',
-            }}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-full"
+            style={{ background: 'linear-gradient(135deg, #1d4ed8, #2563eb)', boxShadow: '0 4px 20px rgba(37,99,235,0.45), 0 0 0 1px rgba(255,255,255,0.1)' }}
             title="Emergency AI Assistant"
           >
             <div className="relative">
               <Bot className="w-5 h-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border-2 animate-pulse"
-                style={{ background: 'var(--accent-emerald)', borderColor: 'transparent' }} />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-blue-700 animate-pulse" />
             </div>
             <span className="text-sm font-semibold text-white tracking-wide">Emergency AI</span>
           </motion.button>
@@ -348,46 +343,38 @@ export default function EmergencyChat() {
             style={{
               width: 'min(420px, calc(100vw - 16px))',
               height: 'min(620px, calc(100vh - 80px))',
-              background: 'var(--bg-base)',
-              border: '1px solid var(--border-default)',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+              background: '#0f1e35',
+              border: '1px solid rgba(59,130,246,0.2)',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(59,130,246,0.08)',
             }}
           >
-            {/* Header */}
+            {/* Header — blue gradient */}
             <div className="flex items-center justify-between px-4 py-3.5 flex-shrink-0"
-              style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-default)' }}>
+              style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <div className="flex items-center gap-3">
-                {/* Avatar */}
                 <div className="relative w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(139,92,246,0.3))', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <Bot className="w-4.5 h-4.5" style={{ width: 18, height: 18, color: 'var(--accent-gold)' }} />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 animate-pulse"
-                    style={{ background: 'var(--accent-emerald)', borderColor: 'var(--bg-elevated)' }} />
+                  style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                  <Bot style={{ width: 18, height: 18, color: 'white' }} />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-blue-700 animate-pulse" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Emergency Assistant</span>
-                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                      style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent-purple)' }}>
+                    <span className="text-sm font-semibold text-white">Emergency Assistant</span>
+                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-blue-100"
+                      style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)' }}>
                       <Sparkles style={{ width: 8, height: 8 }} />AI
                     </span>
                   </div>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>Gemini · Always available</p>
+                  <p className="text-[11px] mt-0.5 text-blue-100/70">Gemini · Always available</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={reset} title="Restart conversation"
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-                  style={{ color: 'var(--text-tertiary)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                <button onClick={reset} title="Restart"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all">
                   <RotateCcw style={{ width: 13, height: 13 }} />
                 </button>
                 <button onClick={() => setOpen(false)} title="Close"
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-                  style={{ color: 'var(--text-tertiary)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all">
                   <X style={{ width: 14, height: 14 }} />
                 </button>
               </div>
@@ -395,7 +382,7 @@ export default function EmergencyChat() {
 
             {/* Message area */}
             <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4"
-              style={{ background: 'var(--bg-base)', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
+              style={{ background: '#0f1e35', scrollbarWidth: 'thin', scrollbarColor: 'rgba(59,130,246,0.15) transparent' }}>
 
               {messages.map(msg => (
                 <motion.div
@@ -408,56 +395,51 @@ export default function EmergencyChat() {
                   {/* Bot avatar */}
                   {msg.from === 'bot' && (
                     <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                      style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.2))', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <Bot style={{ width: 13, height: 13, color: 'var(--accent-gold)' }} />
+                      style={{ background: 'linear-gradient(135deg, #1d4ed8, #2563eb)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                      <Bot style={{ width: 13, height: 13, color: 'white' }} />
                     </div>
                   )}
 
                   <div className={`flex flex-col gap-1 ${msg.from === 'user' ? 'items-end max-w-[80%]' : 'items-start max-w-[86%]'}`}>
                     {/* Bubble */}
-                    <div
-                      className="px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed"
+                    <div className="px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed"
                       style={msg.from === 'user' ? {
-                        background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.12))',
-                        border: '1px solid rgba(59,130,246,0.25)',
-                        color: 'var(--text-primary)',
+                        background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                        color: 'white',
                         borderBottomRightRadius: 4,
+                        boxShadow: '0 2px 8px rgba(37,99,235,0.3)',
                       } : {
-                        background: 'var(--bg-surface)',
-                        border: '1px solid var(--border-default)',
-                        color: 'var(--text-secondary)',
+                        background: '#162d4a',
+                        border: '1px solid rgba(59,130,246,0.18)',
+                        color: '#cbd5e1',
                         borderTopLeftRadius: 4,
                       }}
                     >
-                      {/* AI badge */}
                       {msg.from === 'bot' && msg.isAI && (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full mb-1.5 mr-1"
-                          style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)', color: 'var(--accent-purple)' }}>
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full mb-1.5 mr-1 text-blue-200"
+                          style={{ background: 'rgba(37,99,235,0.3)', border: '1px solid rgba(59,130,246,0.4)' }}>
                           <Sparkles style={{ width: 8, height: 8 }} />AI
                         </span>
                       )}
                       {formatText(msg.text)}
                     </div>
 
-                    {/* Timestamp */}
-                    <span className="text-[10px] px-1" style={{ color: 'var(--text-muted)' }}>{msg.time}</span>
+                    <span className="text-[10px] px-1 text-blue-300/30">{msg.time}</span>
 
                     {/* Option chips */}
                     {msg.from === 'bot' && msg.options && msg.options.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-0.5">
                         {msg.options.map(opt => (
                           <button key={opt} onClick={() => handleOption(opt)} disabled={loading}
-                            className="text-[11px] font-medium px-3 py-1.5 rounded-xl transition-all duration-150 disabled:opacity-40"
-                            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}
+                            className="text-[11px] font-medium px-3 py-1.5 rounded-xl transition-all duration-150 disabled:opacity-40 text-blue-200 hover:text-white"
+                            style={{ background: '#162d4a', border: '1px solid rgba(59,130,246,0.2)' }}
                             onMouseEnter={e => {
-                              e.currentTarget.style.background = 'var(--bg-hover)';
-                              e.currentTarget.style.borderColor = 'var(--border-hover)';
-                              e.currentTarget.style.color = 'var(--text-primary)';
+                              e.currentTarget.style.background = '#1d4ed8';
+                              e.currentTarget.style.borderColor = 'rgba(59,130,246,0.6)';
                             }}
                             onMouseLeave={e => {
-                              e.currentTarget.style.background = 'var(--bg-elevated)';
-                              e.currentTarget.style.borderColor = 'var(--border-default)';
-                              e.currentTarget.style.color = 'var(--text-secondary)';
+                              e.currentTarget.style.background = '#162d4a';
+                              e.currentTarget.style.borderColor = 'rgba(59,130,246,0.2)';
                             }}>
                             {opt}
                           </button>
@@ -474,18 +456,18 @@ export default function EmergencyChat() {
 
             {/* Emergency numbers strip */}
             <div className="flex items-center justify-center gap-3 px-3 py-1.5 flex-shrink-0"
-              style={{ background: 'var(--bg-elevated)', borderTop: '1px solid var(--border-subtle)' }}>
-              <AlertTriangle style={{ width: 10, height: 10, color: 'var(--accent-coral)' }} />
+              style={{ background: '#0a1628', borderTop: '1px solid rgba(59,130,246,0.12)' }}>
+              <AlertTriangle style={{ width: 10, height: 10, color: '#ef4444' }} />
               {[{ n: '115', label: 'Medical' }, { n: '16', label: 'Fire' }, { n: '15', label: 'Police' }, { n: '1122', label: 'Rescue' }].map(e => (
-                <span key={e.n} className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                  <span style={{ color: 'var(--accent-coral)' }}>{e.n}</span> {e.label}
+                <span key={e.n} className="text-[10px] font-medium text-blue-300/40">
+                  <span className="text-red-400">{e.n}</span> {e.label}
                 </span>
               ))}
             </div>
 
             {/* Input bar */}
             <div className="flex items-end gap-2 px-3 pb-3 pt-2.5 flex-shrink-0"
-              style={{ background: 'var(--bg-elevated)', borderTop: '1px solid var(--border-default)' }}>
+              style={{ background: '#0a1628', borderTop: '1px solid rgba(59,130,246,0.15)' }}>
               <textarea
                 ref={inputRef}
                 value={input}
@@ -494,28 +476,26 @@ export default function EmergencyChat() {
                 placeholder="Type your question or describe the emergency…"
                 disabled={loading}
                 rows={1}
-                className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-[13px] outline-none transition-all leading-relaxed disabled:opacity-50"
+                className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-[13px] outline-none transition-all leading-relaxed disabled:opacity-50 text-white placeholder-blue-300/30"
                 style={{
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-default)',
-                  color: 'var(--text-primary)',
+                  background: '#162d4a',
+                  border: '1px solid rgba(59,130,246,0.2)',
                   maxHeight: 96,
                   scrollbarWidth: 'none',
                 }}
-                onFocus={e => { e.target.style.borderColor = 'rgba(59,130,246,0.4)'; }}
-                onBlur={e => { e.target.style.borderColor = 'var(--border-default)'; }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(59,130,246,0.6)'; }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(59,130,246,0.2)'; }}
               />
               <motion.button
                 whileTap={{ scale: 0.88 }}
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-opacity"
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: input.trim() && !loading
-                    ? 'linear-gradient(135deg, var(--accent-gold), var(--accent-purple))'
-                    : 'var(--bg-surface)',
-                  opacity: !input.trim() || loading ? 0.35 : 1,
+                  background: input.trim() && !loading ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : '#162d4a',
+                  opacity: !input.trim() || loading ? 0.4 : 1,
                   cursor: !input.trim() || loading ? 'not-allowed' : 'pointer',
+                  boxShadow: input.trim() && !loading ? '0 2px 8px rgba(37,99,235,0.4)' : 'none',
                 }}
               >
                 <Send style={{ width: 15, height: 15, color: 'white' }} />
