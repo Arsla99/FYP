@@ -4,10 +4,8 @@ import { requireAuth } from '../../../utils/serverAuth';
 import connectDB from '../../../utils/db';
 import User from '../../../models/User';
 
-function buildSMSMessage(userName: string, location: string, triggerMethod: string, emotion: string, fearLevel: number, lat?: number, lon?: number): string {
-  const mapsLink = lat && lon
-    ? `https://maps.google.com/?q=${lat},${lon}`
-    : null;
+function buildMessage(userName: string, location: string, triggerMethod: string, emotion: string, fearLevel: number, lat?: number, lon?: number): string {
+  const mapsLink = lat && lon ? `https://maps.google.com/?q=${lat},${lon}` : null;
 
   return (
     `🚨 EMERGENCY ALERT 🚨\n` +
@@ -21,35 +19,53 @@ function buildSMSMessage(userName: string, location: string, triggerMethod: stri
   );
 }
 
-async function sendViaTwilio(
+type ContactResult = { name: string; phone: string; channel: string; status: string; sid?: string; error?: string };
+
+async function sendAlerts(
   contacts: Array<{ name: string; phone: string }>,
   message: string
-): Promise<Array<{ name: string; phone: string; status: string; sid?: string; error?: string }>> {
+): Promise<ContactResult[]> {
   const twilio = (await import('twilio')).default;
   const client = twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
 
-  // Support both Messaging Service SID and direct phone number
+  const whatsappFrom = process.env.TWILIO_WHATSAPP_FROM; // e.g. whatsapp:+14155238886
   const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
-  const from = process.env.TWILIO_PHONE_NUMBER;
-  const sender = messagingServiceSid
-    ? { messagingServiceSid }
-    : { from: from! };
+  const smsFrom = process.env.TWILIO_PHONE_NUMBER;
 
-  const results = await Promise.allSettled(
-    contacts.map(contact =>
-      client.messages.create({ body: message, to: contact.phone, ...sender })
-    )
-  );
+  const results: ContactResult[] = [];
 
-  return results.map((result, i) => {
-    if (result.status === 'fulfilled') {
-      console.log(`✅ SMS sent to ${contacts[i].name} (${contacts[i].phone}) — SID: ${result.value.sid}`);
-      return { name: contacts[i].name, phone: contacts[i].phone, status: 'sent', sid: result.value.sid };
-    } else {
-      console.error(`❌ SMS failed for ${contacts[i].name}: ${result.reason}`);
-      return { name: contacts[i].name, phone: contacts[i].phone, status: 'failed', error: String(result.reason) };
+  for (const contact of contacts) {
+    const phone = contact.phone.trim();
+
+    // ── 1. Try WhatsApp first ──────────────────────────────────────────────
+    if (whatsappFrom) {
+      try {
+        const msg = await client.messages.create({
+          body: message,
+          from: whatsappFrom,
+          to: `whatsapp:${phone}`,
+        });
+        console.log(`✅ WhatsApp sent to ${contact.name} (${phone}) — SID: ${msg.sid}`);
+        results.push({ name: contact.name, phone, channel: 'whatsapp', status: 'sent', sid: msg.sid });
+        continue; // WhatsApp succeeded — skip SMS for this contact
+      } catch (err: any) {
+        console.warn(`⚠️ WhatsApp failed for ${contact.name} (code ${err.code}) — falling back to SMS`);
+      }
     }
-  });
+
+    // ── 2. SMS fallback ────────────────────────────────────────────────────
+    try {
+      const sender = messagingServiceSid ? { messagingServiceSid } : { from: smsFrom! };
+      const msg = await client.messages.create({ body: message, to: phone, ...sender });
+      console.log(`✅ SMS sent to ${contact.name} (${phone}) — SID: ${msg.sid}`);
+      results.push({ name: contact.name, phone, channel: 'sms', status: 'sent', sid: msg.sid });
+    } catch (err: any) {
+      console.error(`❌ SMS also failed for ${contact.name}: ${err.message}`);
+      results.push({ name: contact.name, phone, channel: 'sms', status: 'failed', error: err.message });
+    }
+  }
+
+  return results;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -89,26 +105,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     const result = await db.collection('emergency_alerts').insertOne(alertData);
-    console.log(`🚨 Emergency alert created for ${user.email} → ${userDoc.contacts.length} contact(s)`);
+    console.log(`🚨 Emergency alert for ${user.email} → ${userDoc.contacts.length} contact(s)`);
 
-    const message = buildSMSMessage(user.name, alertData.location, alertData.triggerMethod, alertData.emotion, alertData.fearLevel, lat, lon);
+    const message = buildMessage(
+      user.name, alertData.location, alertData.triggerMethod,
+      alertData.emotion, alertData.fearLevel, lat, lon
+    );
 
     const twilioConfigured =
       process.env.TWILIO_ACCOUNT_SID &&
       process.env.TWILIO_AUTH_TOKEN &&
-      (process.env.TWILIO_MESSAGING_SERVICE_SID || process.env.TWILIO_PHONE_NUMBER);
+      (process.env.TWILIO_WHATSAPP_FROM || process.env.TWILIO_MESSAGING_SERVICE_SID || process.env.TWILIO_PHONE_NUMBER);
 
-    let sendResults: any[];
+    let sendResults: ContactResult[] | { name: string; phone: string; status: string }[];
 
     if (twilioConfigured) {
-      sendResults = await sendViaTwilio(userDoc.contacts, message);
+      sendResults = await sendAlerts(userDoc.contacts, message);
     } else {
-      // Simulation mode — no Twilio credentials yet
-      console.log('⚠️  Twilio not configured — simulating SMS sends');
-      sendResults = userDoc.contacts.map((c: any) => {
-        console.log(`📱 [SIMULATED] SMS to ${c.name} (${c.phone}):\n${message}`);
-        return { name: c.name, phone: c.phone, status: 'simulated' };
-      });
+      console.log('⚠️ Twilio not configured — simulating');
+      sendResults = userDoc.contacts.map((c: any) => ({ name: c.name, phone: c.phone, status: 'simulated' }));
     }
 
     await db.collection('emergency_alerts').updateOne(
@@ -116,21 +131,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { $set: { status: 'sent', sendResults, sentAt: new Date() } }
     );
 
-    const sentCount = sendResults.filter(r => r.status === 'sent').length;
-    const simCount = sendResults.filter(r => r.status === 'simulated').length;
+    const sentCount = (sendResults as any[]).filter(r => r.status === 'sent').length;
+    const whatsappCount = (sendResults as ContactResult[]).filter(r => r.status === 'sent' && r.channel === 'whatsapp').length;
+    const smsCount = (sendResults as ContactResult[]).filter(r => r.status === 'sent' && r.channel === 'sms').length;
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: twilioConfigured
-        ? `Emergency alert sent to ${sentCount}/${userDoc.contacts.length} contact(s)`
-        : `Emergency alert simulated for ${simCount} contact(s) (Twilio not configured)`,
+      message: `Alert sent to ${sentCount}/${userDoc.contacts.length} contact(s) — WhatsApp: ${whatsappCount}, SMS: ${smsCount}`,
       alertId: result.insertedId,
       contactsNotified: userDoc.contacts.length,
       sendResults,
     });
   } catch (error) {
     console.error('❌ Error sending emergency alert:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error',
       error: error instanceof Error ? error.message : 'Unknown error',
