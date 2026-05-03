@@ -28,40 +28,23 @@ async function sendAlerts(
   const twilio = (await import('twilio')).default;
   const client = twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
 
-  const whatsappFrom = process.env.TWILIO_WHATSAPP_FROM; // e.g. whatsapp:+14155238886
-  const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
-  const smsFrom = process.env.TWILIO_PHONE_NUMBER;
-
+  const whatsappFrom = process.env.TWILIO_WHATSAPP_FROM;
   const results: ContactResult[] = [];
 
   for (const contact of contacts) {
     const phone = contact.phone.trim();
 
-    // ── 1. Try WhatsApp first ──────────────────────────────────────────────
-    if (whatsappFrom) {
-      try {
-        const msg = await client.messages.create({
-          body: message,
-          from: whatsappFrom,
-          to: `whatsapp:${phone}`,
-        });
-        console.log(`✅ WhatsApp sent to ${contact.name} (${phone}) — SID: ${msg.sid}`);
-        results.push({ name: contact.name, phone, channel: 'whatsapp', status: 'sent', sid: msg.sid });
-        continue; // WhatsApp succeeded — skip SMS for this contact
-      } catch (err: any) {
-        console.warn(`⚠️ WhatsApp failed for ${contact.name} (code ${err.code}) — falling back to SMS`);
-      }
-    }
-
-    // ── 2. SMS fallback ────────────────────────────────────────────────────
     try {
-      const sender = messagingServiceSid ? { messagingServiceSid } : { from: smsFrom! };
-      const msg = await client.messages.create({ body: message, to: phone, ...sender });
-      console.log(`✅ SMS sent to ${contact.name} (${phone}) — SID: ${msg.sid}`);
-      results.push({ name: contact.name, phone, channel: 'sms', status: 'sent', sid: msg.sid });
+      const msg = await client.messages.create({
+        body: message,
+        from: whatsappFrom!,
+        to: `whatsapp:${phone}`,
+      });
+      console.log(`✅ WhatsApp sent to ${contact.name} (${phone}) — SID: ${msg.sid}`);
+      results.push({ name: contact.name, phone, channel: 'whatsapp', status: 'sent', sid: msg.sid });
     } catch (err: any) {
-      console.error(`❌ SMS also failed for ${contact.name}: ${err.message}`);
-      results.push({ name: contact.name, phone, channel: 'sms', status: 'failed', error: err.message });
+      console.error(`❌ WhatsApp failed for ${contact.name}: ${err.message}`);
+      results.push({ name: contact.name, phone, channel: 'whatsapp', status: 'failed', error: err.message });
     }
   }
 
@@ -115,7 +98,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const twilioConfigured =
       process.env.TWILIO_ACCOUNT_SID &&
       process.env.TWILIO_AUTH_TOKEN &&
-      (process.env.TWILIO_WHATSAPP_FROM || process.env.TWILIO_MESSAGING_SERVICE_SID || process.env.TWILIO_PHONE_NUMBER);
+      process.env.TWILIO_WHATSAPP_FROM;
 
     let sendResults: ContactResult[] | { name: string; phone: string; status: string }[];
 
